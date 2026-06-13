@@ -1,0 +1,10 @@
+{
+    "app_name": "Sistem Informasi KP\/KPL Universitas Almuslim",
+    "gpa_minimum": "2.50",
+    "sks_minimum": "100",
+    "smtp_host": "smtp.gmail.com",
+    "smtp_port": "587",
+    "smtp_user": "",
+    "smtp_pass": "",
+    "system_status": "open"
+}
