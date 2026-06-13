@@ -609,6 +609,7 @@ Contoh:
   - **Arsip KP/KPL**: Dashboard riwayat periode akademik yang terkunci secara permanen (Read-Only).
   - **Laporan Rekapitulasi**: Dasbor statistik distribusi grade nilai serta ekspor berkas Excel dan PDF resmi.
   - **Catatan Keputusan**: Halaman personal audit logs khusus Koordinator dengan fitur JSON Diff viewer.
+  - **Profil Saya**: Pengaturan data profil pribadi (nama, email, telepon) dan pergantian kata sandi masuk secara aman.
 
 ### Belum Dikerjakan / Belum Selesai (Pending/Next Roles)
 
