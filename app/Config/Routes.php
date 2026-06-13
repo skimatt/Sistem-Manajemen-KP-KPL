@@ -190,22 +190,49 @@ $routes->group('koordinator', ['filter' => ['auth', 'role:koordinator']], functi
 // Group for Mahasiswa
 $routes->group('mahasiswa', ['filter' => ['auth', 'role:mahasiswa']], function($routes) {
     $routes->get('dashboard', '\App\Controllers\Mahasiswa\MahasiswaController::index');
+    
+    // Profil
     $routes->get('profile', '\App\Controllers\Mahasiswa\MahasiswaController::profile');
-    // Placeholders for other workflow steps
-    $routes->get('registrasi', '\App\Controllers\Mahasiswa\MahasiswaController::placeholder/Registrasi KP_KPL');
-    $routes->get('status-registrasi', '\App\Controllers\Mahasiswa\MahasiswaController::placeholder/Status Registrasi');
-    $routes->get('penempatan', '\App\Controllers\Mahasiswa\MahasiswaController::placeholder/Penempatan KP_KPL');
-    $routes->get('rekomendasi-mitra', '\App\Controllers\Mahasiswa\MahasiswaController::placeholder/Rekomendasi Mitra');
-    $routes->get('tempat-mandiri', '\App\Controllers\Mahasiswa\MahasiswaController::placeholder/Tempat Mandiri');
-    $routes->get('dokumen', '\App\Controllers\Mahasiswa\MahasiswaController::placeholder/Surat & Dokumen');
-    $routes->get('upload-balasan', '\App\Controllers\Mahasiswa\MahasiswaController::placeholder/Upload Dokumen Balasan');
-    $routes->get('pembimbing', '\App\Controllers\Mahasiswa\MahasiswaController::placeholder/Pembimbing Saya');
-    $routes->get('logbook', '\App\Controllers\Mahasiswa\MahasiswaController::placeholder/Logbook Mingguan');
-    $routes->get('catatan-dosen', '\App\Controllers\Mahasiswa\MahasiswaController::placeholder/Catatan Dosen');
-    $routes->get('laporan', '\App\Controllers\Mahasiswa\MahasiswaController::placeholder/Laporan Akhir');
-    $routes->get('penilaian', '\App\Controllers\Mahasiswa\MahasiswaController::placeholder/Penilaian Saya');
-    $routes->get('riwayat', '\App\Controllers\Mahasiswa\MahasiswaController::placeholder/Riwayat KP_KPL');
-    $routes->get('notifikasi', '\App\Controllers\Mahasiswa\MahasiswaController::placeholder/Notifikasi');
+    $routes->post('profile/update', '\App\Controllers\Mahasiswa\MahasiswaController::updateProfile');
+    
+    // Registrasi
+    $routes->get('registrasi', '\App\Controllers\Mahasiswa\MahasiswaController::registrasi');
+    $routes->post('registrasi/submit', '\App\Controllers\Mahasiswa\MahasiswaController::submitRegistrasi');
+    $routes->get('status-registrasi', '\App\Controllers\Mahasiswa\MahasiswaController::statusRegistrasi');
+    
+    // Penempatan
+    $routes->get('penempatan', '\App\Controllers\Mahasiswa\MahasiswaController::penempatan');
+    $routes->post('penempatan/choose-type', '\App\Controllers\Mahasiswa\MahasiswaController::choosePenempatanType');
+    $routes->get('rekomendasi-mitra', '\App\Controllers\Mahasiswa\MahasiswaController::rekomendasiMitra');
+    $routes->post('rekomendasi-mitra/submit', '\App\Controllers\Mahasiswa\MahasiswaController::submitMitraChoices');
+    $routes->get('tempat-mandiri', '\App\Controllers\Mahasiswa\MahasiswaController::tempatMandiri');
+    $routes->post('tempat-mandiri/submit', '\App\Controllers\Mahasiswa\MahasiswaController::submitMandiriProposal');
+    
+    // Surat & Dokumen
+    $routes->get('dokumen', '\App\Controllers\Mahasiswa\MahasiswaController::dokumen');
+    $routes->get('upload-balasan', '\App\Controllers\Mahasiswa\MahasiswaController::uploadBalasan');
+    $routes->post('upload-balasan/submit', '\App\Controllers\Mahasiswa\MahasiswaController::submitBalasanFile');
+    
+    // Pembimbing
+    $routes->get('pembimbing', '\App\Controllers\Mahasiswa\MahasiswaController::pembimbing');
+    
+    // Logbook
+    $routes->get('logbook', '\App\Controllers\Mahasiswa\MahasiswaController::logbook');
+    $routes->post('logbook/add-week', '\App\Controllers\Mahasiswa\MahasiswaController::addLogbookWeek');
+    $routes->post('logbook/add-entry', '\App\Controllers\Mahasiswa\MahasiswaController::addLogbookEntry');
+    $routes->post('logbook/submit-week/(:num)', '\App\Controllers\Mahasiswa\MahasiswaController::submitLogbookWeek/$1');
+    $routes->get('catatan-dosen', '\App\Controllers\Mahasiswa\MahasiswaController::catatanDosen');
+    
+    // Laporan Akhir
+    $routes->get('laporan', '\App\Controllers\Mahasiswa\MahasiswaController::laporan');
+    $routes->post('laporan/submit', '\App\Controllers\Mahasiswa\MahasiswaController::submitLaporan');
+    
+    // Penilaian
+    $routes->get('penilaian', '\App\Controllers\Mahasiswa\MahasiswaController::penilaian');
+    
+    // Others
+    $routes->get('riwayat', '\App\Controllers\Mahasiswa\MahasiswaController::riwayat');
+    $routes->get('notifikasi', '\App\Controllers\Mahasiswa\MahasiswaController::notifikasi');
 });
 
 // Group for Dosen
