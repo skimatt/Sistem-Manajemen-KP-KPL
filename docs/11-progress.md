@@ -17,10 +17,10 @@ Dokumen ini berfungsi sebagai catatan riwayat kerja agar project mudah dilanjutk
 Status saat ini:
 
 ```text
-Pondasi Inti, Database MVP, Autentikasi Multi-role, Layout Premium SaaS, dan SELURUH Modul Admin (Master, Pelaksanaan, Konfigurasi, Pengaturan, Export) selesai diimplementasikan.
+Pondasi Inti, Database MVP, Autentikasi Multi-role, Layout Premium SaaS, SELURUH Modul Admin, SELURUH Modul Koordinator, dan SELURUH Modul Mahasiswa (Dashboard, Profil Saya, Registrasi KP/KPL, Status Registrasi, Penempatan KP/KPL, Rekomendasi Mitra TOPSIS, Tempat Mandiri, Surat & Dokumen, Upload Balasan, Pembimbing Saya, Logbook Mingguan & Harian, Catatan Dosen, Laporan Akhir, dan Penilaian Saya) selesai diimplementasikan.
 ```
 
-Proyek berada pada tahap di mana Admin Panel sudah fungsional secara penuh. Langkah selanjutnya adalah mengembangkan peran akademik fungsional lainnya (Koordinator, Mahasiswa, Dosen, Instansi) beserta workflow khususnya.
+Proyek berada pada tahap di mana Admin Panel, Koordinator Akademik, dan Mahasiswa Step-based Workflows sudah fungsional secara penuh. Langkah selanjutnya adalah mengembangkan peran Dosen dan Instansi.
 
 Dokumen utama yang sudah direncanakan:
 
@@ -813,6 +813,43 @@ Contoh:
 ### Catatan
 
 - Dokumentasi sekarang lebih siap untuk memulai fondasi CI4: auth, layout, role filter, workflow service, dan migration inti.
+
+---
+
+## Update 2026-06-13 (Penyelesaian Modul Pelaksanaan Mahasiswa)
+
+### Selesai
+
+- [x] **Routing & Controller**: Menghubungkan seluruh 20 rute mahasiswa di `app/Config/Routes.php` ke `app/Controllers/Mahasiswa/MahasiswaController.php`.
+- [x] **Mahasiswa Controller**:
+  - Mengimplementasikan `getStudentData()` dan `checkAccess($stage)` untuk membatasi akses URL sekuensial berdasarkan status registrasi dan profil mahasiswa.
+  - Mengimplementasikan validasi data masukan dalam Bahasa Indonesia lengkap dengan penanganan error.
+  - Menyusun log perubahan status pendaftaran dan audit log aktivitas (`AuditService::log()`) secara transaksional (`transStart`/`transComplete`).
+  - Mengelola upload berkas persyaratan (bukti bayar, KHS, surat rekomendasi), bukti komunikasi mandiri, surat balasan instansi, kegiatan logbook harian, dan laporan akhir PDF.
+  - Integrasi dengan `TopsisService` untuk memunculkan ranking rekomendasi mitra instansi.
+- [x] **14 View Templates Pelaksanaan Mahasiswa**:
+  - `mahasiswa/index.php` (stepper alur tahapan, action advice dinamis, summary pembimbing)
+  - `profile.php` (form edit biodata dan akademik terintegrasi CSRF dan validasi feedback)
+  - `registrasi.php` (form pendaftaran kelayakan SKS/IPK, prasyarat kuliah, dan file upload)
+  - `status_registrasi.php` (rincian berkas, timeline log verifikasi koordinator)
+  - `penempatan.php` (pembagian jalur Mitra Kampus vs Tempat Mandiri)
+  - `rekomendasi_mitra.php` (daftar peringkat instansi TOPSIS, kuota penempatan, form prioritas 1, 2, 3)
+  - `tempat_mandiri.php` (usulan instansi mandiri, kontak narahubung, justifikasi alasan, berkas penjajakan)
+  - `dokumen.php` (halaman download surat tugas/permohonan hasil generate sistem)
+  - `upload_balasan.php` (unggah scan PDF penerimaan instansi bersurat stempel)
+  - `pembimbing.php` (kartu rincian kontak dosen pembimbing akademik yang ditugaskan)
+  - `logbook.php` (tampilan logbook mingguan, accordion, form input target/luaran mingguan, dan modal Alpine.js untuk catatan kegiatan harian)
+  - `catatan_dosen.php` (umpan balik, status, komentar bimbingan dosen pembimbing)
+  - `laporan.php` (form judul laporan akhir, unggah berkas laporan akhir PDF, dan status kunci)
+  - `penilaian.php` (kartu transkrip nilai angka, grade huruf kelulusan, dan tabel rincian komponen)
+  - `riwayat.php` (daftar riwayat pendaftaran lintas periode akademik)
+  - `notifikasi.php` (list pemberitahuan sistem terintegrasi filter is_read)
+- [x] **Verifikasi Sintaks**: Syntax lint check (`php -l`) pada semua berkas lolos 100%.
+- [x] **Git Repository**: Mengunggah seluruh revisi dan view template baru ke repositori Git jarak jauh (`origin main`).
+
+### Sedang Dikerjakan
+
+- [ ] Implementasi peran Dosen Pembimbing (monitoring bimbingan, review logbook, koreksi laporan, penilaian akademik).
 
 ---
 
