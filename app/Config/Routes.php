@@ -183,7 +183,8 @@ $routes->group('koordinator', ['filter' => ['auth', 'role:koordinator']], functi
     $routes->get('laporan/excel', '\App\Controllers\Koordinator\LaporanController::exportExcel');
     $routes->get('laporan/pdf', '\App\Controllers\Koordinator\LaporanController::exportPdf');
     $routes->get('keputusan', '\App\Controllers\Koordinator\KeputusanController::index');
-    $routes->get('profile', '\App\Controllers\Koordinator\KoordinatorController::placeholder/Profil Saya');
+    $routes->get('profile', '\App\Controllers\Koordinator\KoordinatorController::profile');
+    $routes->post('profile/update', '\App\Controllers\Koordinator\KoordinatorController::updateProfile');
 });
 
 // Group for Mahasiswa
