@@ -851,6 +851,10 @@ Contoh:
 
 - [ ] Implementasi peran Dosen Pembimbing (monitoring bimbingan, review logbook, koreksi laporan, penilaian akademik).
 
+### Masalah & Perbaikan
+
+- [x] **[2026-06-13] Bug Upload MIME/finfo Error**: Menyelesaikan kesalahan `finfo_file() Failed to open stream: No such file or directory` saat mengunggah berkas registrasi, proposal mandiri, surat balasan, atau laporan akhir pada Windows. Diselesaikan dengan memigrasi validasi `ext_in` dan `max_size` ke validasi manual dalam controller (mencegah library validasi memanggil `guessExtension` yang mengakses temp stream via `finfo_file`) dan memanggil `$file->getClientMimeType()` menggantikan `$file->getMimeType()`.
+
 ---
 
 ## 16. Hal yang Tidak Boleh Dilakukan

@@ -409,9 +409,6 @@ class MahasiswaController extends BaseController
             'passed_networking'           => 'required|in_list[0,1]',
             'passed_concentration_course' => 'required|in_list[0,1]',
             'academic_advisor_name'       => 'required',
-            'payment_proof'               => 'uploaded[payment_proof]|max_size[payment_proof,10240]|ext_in[payment_proof,pdf,jpg,jpeg,png]',
-            'khs_file'                    => 'uploaded[khs_file]|max_size[khs_file,10240]|ext_in[khs_file,pdf]',
-            'recommendation_file'         => 'uploaded[recommendation_file]|max_size[recommendation_file,10240]|ext_in[recommendation_file,pdf]',
         ];
 
         $messages = [
@@ -424,13 +421,62 @@ class MahasiswaController extends BaseController
             'passed_networking'           => ['required' => 'Kelulusan Jaringan Komputer wajib dipilih.'],
             'passed_concentration_course' => ['required' => 'Kelulusan Mata Kuliah Konsentrasi wajib dipilih.'],
             'academic_advisor_name'       => ['required' => 'Nama Dosen Pembimbing Akademik wajib diisi.'],
-            'payment_proof'               => ['uploaded' => 'Bukti pembayaran wajib diunggah.', 'max_size' => 'Ukuran file bukti pembayaran maksimal 10 MB.', 'ext_in' => 'Format bukti pembayaran harus PDF, JPG, JPEG, atau PNG.'],
-            'khs_file'                    => ['uploaded' => 'File KHS terbaru wajib diunggah.', 'max_size' => 'Ukuran KHS terbaru maksimal 10 MB.', 'ext_in' => 'Format file KHS harus PDF.'],
-            'recommendation_file'         => ['uploaded' => 'Surat rekomendasi Dosen PA wajib diunggah.', 'max_size' => 'Ukuran rekomendasi Dosen PA maksimal 10 MB.', 'ext_in' => 'Format file surat rekomendasi harus PDF.'],
         ];
 
-        if (!$this->validate($rules, $messages)) {
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        $validationFailed = !$this->validate($rules, $messages);
+        $errors = $validationFailed ? $this->validator->getErrors() : [];
+
+        // Manual File Validation
+        $paymentFile = $this->request->getFile('payment_proof');
+        $khsFile = $this->request->getFile('khs_file');
+        $recomFile = $this->request->getFile('recommendation_file');
+        $fileErrors = [];
+
+        // Validate payment_proof
+        if (!$paymentFile || !$paymentFile->isValid()) {
+            $fileErrors['payment_proof'] = 'Bukti pembayaran wajib diunggah.';
+        } else {
+            $paymentExt = strtolower($paymentFile->getClientExtension());
+            $paymentSize = $paymentFile->getSize();
+            if (!in_array($paymentExt, ['pdf', 'jpg', 'jpeg', 'png'])) {
+                $fileErrors['payment_proof'] = 'Format bukti pembayaran harus PDF, JPG, JPEG, atau PNG.';
+            } elseif ($paymentSize > 10 * 1024 * 1024) {
+                $fileErrors['payment_proof'] = 'Ukuran file bukti pembayaran maksimal 10 MB.';
+            }
+        }
+
+        // Validate khs_file
+        if (!$khsFile || !$khsFile->isValid()) {
+            $fileErrors['khs_file'] = 'File KHS terbaru wajib diunggah.';
+        } else {
+            $khsExt = strtolower($khsFile->getClientExtension());
+            $khsSize = $khsFile->getSize();
+            if ($khsExt !== 'pdf') {
+                $fileErrors['khs_file'] = 'Format file KHS harus PDF.';
+            } elseif ($khsSize > 10 * 1024 * 1024) {
+                $fileErrors['khs_file'] = 'Ukuran KHS terbaru maksimal 10 MB.';
+            }
+        }
+
+        // Validate recommendation_file
+        if (!$recomFile || !$recomFile->isValid()) {
+            $fileErrors['recommendation_file'] = 'Surat rekomendasi Dosen PA wajib diunggah.';
+        } else {
+            $recomExt = strtolower($recomFile->getClientExtension());
+            $recomSize = $recomFile->getSize();
+            if ($recomExt !== 'pdf') {
+                $fileErrors['recommendation_file'] = 'Format file surat rekomendasi harus PDF.';
+            } elseif ($recomSize > 10 * 1024 * 1024) {
+                $fileErrors['recommendation_file'] = 'Ukuran rekomendasi Dosen PA maksimal 10 MB.';
+            }
+        }
+
+        if (!empty($fileErrors)) {
+            $errors = array_merge($errors, $fileErrors);
+        }
+
+        if (!empty($errors)) {
+            return redirect()->back()->withInput()->with('errors', $errors);
         }
 
         // Upload directory
@@ -439,10 +485,21 @@ class MahasiswaController extends BaseController
             mkdir($uploadDir, 0777, true);
         }
 
-        // Process File Uploads
-        $paymentFile = $this->request->getFile('payment_proof');
-        $khsFile = $this->request->getFile('khs_file');
-        $recomFile = $this->request->getFile('recommendation_file');
+        // Extract metadata BEFORE moving the files to prevent finfo_file temp file not found errors
+        $paymentName = $paymentFile->getClientName();
+        $paymentExt  = $paymentFile->getClientExtension();
+        $paymentSize = round($paymentFile->getSize() / 1024);
+        $paymentMime = $paymentFile->getClientMimeType() ?: 'application/octet-stream';
+
+        $khsName = $khsFile->getClientName();
+        $khsExt  = $khsFile->getClientExtension();
+        $khsSize = round($khsFile->getSize() / 1024);
+        $khsMime = $khsFile->getClientMimeType() ?: 'application/pdf';
+
+        $recomName = $recomFile->getClientName();
+        $recomExt  = $recomFile->getClientExtension();
+        $recomSize = round($recomFile->getSize() / 1024);
+        $recomMime = $recomFile->getClientMimeType() ?: 'application/pdf';
 
         $paymentStored = $paymentFile->getRandomName();
         $khsStored = $khsFile->getRandomName();
@@ -497,9 +554,33 @@ class MahasiswaController extends BaseController
 
         // Save student_documents references
         $docs = [
-            ['code' => 'bukti_pembayaran', 'name' => 'Bukti Pembayaran KP/KPL', 'file' => $paymentFile, 'stored' => $paymentStored],
-            ['code' => 'khs_terbaru', 'name' => 'KHS Terbaru', 'file' => $khsFile, 'stored' => $khsStored],
-            ['code' => 'rekomendasi_dosen_pa', 'name' => 'Surat Rekomendasi Dosen PA', 'file' => $recomFile, 'stored' => $recomStored]
+            [
+                'code' => 'bukti_pembayaran', 
+                'name' => 'Bukti Pembayaran KP/KPL', 
+                'stored' => $paymentStored,
+                'orig_name' => $paymentName,
+                'ext' => $paymentExt,
+                'size' => $paymentSize,
+                'mime' => $paymentMime
+            ],
+            [
+                'code' => 'khs_terbaru', 
+                'name' => 'KHS Terbaru', 
+                'stored' => $khsStored,
+                'orig_name' => $khsName,
+                'ext' => $khsExt,
+                'size' => $khsSize,
+                'mime' => $khsMime
+            ],
+            [
+                'code' => 'rekomendasi_dosen_pa', 
+                'name' => 'Surat Rekomendasi Dosen PA', 
+                'stored' => $recomStored,
+                'orig_name' => $recomName,
+                'ext' => $recomExt,
+                'size' => $recomSize,
+                'mime' => $recomMime
+            ]
         ];
 
         foreach ($docs as $d) {
@@ -509,12 +590,12 @@ class MahasiswaController extends BaseController
                 'uploaded_by'     => session()->get('user_id'),
                 'document_name'   => $d['name'],
                 'document_code'   => $d['code'],
-                'original_name'   => $d['file']->getClientName(),
+                'original_name'   => $d['orig_name'],
                 'stored_name'     => $d['stored'],
                 'file_path'       => 'uploads/kp-pkl/' . $d['stored'],
-                'file_ext'        => $d['file']->getClientExtension(),
-                'file_size_kb'    => round($d['file']->getSize() / 1024),
-                'mime_type'       => $d['file']->getMimeType(),
+                'file_ext'        => $d['ext'],
+                'file_size_kb'    => $d['size'],
+                'mime_type'       => $d['mime'],
                 'version'         => 1,
                 'status'          => 'menunggu_verifikasi',
                 'created_at'      => date('Y-m-d H:i:s')
@@ -796,7 +877,6 @@ class MahasiswaController extends BaseController
             'contact_phone'             => 'required|numeric',
             'contact_email'             => 'required|valid_email',
             'reason'                    => 'required',
-            'mandiri_proof'             => 'uploaded[mandiri_proof]|max_size[mandiri_proof,10240]|ext_in[mandiri_proof,pdf]',
         ];
 
         $messages = [
@@ -808,15 +888,45 @@ class MahasiswaController extends BaseController
             'contact_phone'             => ['required' => 'Nomor HP kontak wajib diisi.', 'numeric' => 'Nomor HP kontak hanya boleh berisi angka.'],
             'contact_email'             => ['required' => 'Email kontak wajib diisi.', 'valid_email' => 'Format email kontak tidak valid.'],
             'reason'                    => ['required' => 'Alasan pengajuan wajib diisi.'],
-            'mandiri_proof'             => ['uploaded' => 'File bukti penjajakan/komunikasi wajib diunggah.', 'max_size' => 'File bukti maksimal 10 MB.', 'ext_in' => 'Format file bukti harus PDF.'],
         ];
 
-        if (!$this->validate($rules, $messages)) {
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        $validationFailed = !$this->validate($rules, $messages);
+        $errors = $validationFailed ? $this->validator->getErrors() : [];
+
+        $proofFile = $this->request->getFile('mandiri_proof');
+        $fileErrors = [];
+
+        if (!$proofFile || !$proofFile->isValid()) {
+            $fileErrors['mandiri_proof'] = 'File bukti penjajakan/komunikasi wajib diunggah.';
+        } else {
+            $proofExt  = strtolower($proofFile->getClientExtension());
+            $proofSize = $proofFile->getSize();
+            if ($proofExt !== 'pdf') {
+                $fileErrors['mandiri_proof'] = 'Format file bukti harus PDF.';
+            } elseif ($proofSize > 10 * 1024 * 1024) {
+                $fileErrors['mandiri_proof'] = 'File bukti maksimal 10 MB.';
+            }
+        }
+
+        if (!empty($fileErrors)) {
+            $errors = array_merge($errors, $fileErrors);
+        }
+
+        if (!empty($errors)) {
+            return redirect()->back()->withInput()->with('errors', $errors);
         }
 
         $uploadDir = WRITEPATH . 'uploads/kp-pkl/';
-        $proofFile = $this->request->getFile('mandiri_proof');
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        // Extract metadata BEFORE moving the file
+        $proofName = $proofFile->getClientName();
+        $proofExt  = $proofFile->getClientExtension();
+        $proofSize = round($proofFile->getSize() / 1024);
+        $proofMime = $proofFile->getClientMimeType() ?: 'application/pdf';
+
         $proofStored = $proofFile->getRandomName();
         $proofFile->move($uploadDir, $proofStored);
 
@@ -852,12 +962,12 @@ class MahasiswaController extends BaseController
             'uploaded_by'     => session()->get('user_id'),
             'document_name'   => 'Dokumen Bukti Penjajakan Mandiri',
             'document_code'   => 'proposal_mandiri',
-            'original_name'   => $proofFile->getClientName(),
+            'original_name'   => $proofName,
             'stored_name'     => $proofStored,
             'file_path'       => 'uploads/kp-pkl/' . $proofStored,
-            'file_ext'        => $proofFile->getClientExtension(),
-            'file_size_kb'    => round($proofFile->getSize() / 1024),
-            'mime_type'       => $proofFile->getMimeType(),
+            'file_ext'        => $proofExt,
+            'file_size_kb'    => $proofSize,
+            'mime_type'       => $proofMime,
             'version'         => 1,
             'status'          => 'menunggu_verifikasi',
             'created_at'      => date('Y-m-d H:i:s')
@@ -1002,20 +1112,36 @@ class MahasiswaController extends BaseController
         $db = \Config\Database::connect();
         list($profile, $registration) = $this->getStudentData();
 
-        $rules = [
-            'reply_letter' => 'uploaded[reply_letter]|max_size[reply_letter,10240]|ext_in[reply_letter,pdf]',
-        ];
+        $replyFile = $this->request->getFile('reply_letter');
+        $errors = [];
 
-        $messages = [
-            'reply_letter' => ['uploaded' => 'Surat balasan wajib diunggah.', 'max_size' => 'Ukuran file surat balasan maksimal 10 MB.', 'ext_in' => 'Format file surat balasan harus PDF.'],
-        ];
+        if (!$replyFile || !$replyFile->isValid()) {
+            $errors['reply_letter'] = 'Surat balasan wajib diunggah.';
+        } else {
+            $replyExt  = strtolower($replyFile->getClientExtension());
+            $replySize = $replyFile->getSize();
+            if ($replyExt !== 'pdf') {
+                $errors['reply_letter'] = 'Format file surat balasan harus PDF.';
+            } elseif ($replySize > 10 * 1024 * 1024) {
+                $errors['reply_letter'] = 'Ukuran file surat balasan maksimal 10 MB.';
+            }
+        }
 
-        if (!$this->validate($rules, $messages)) {
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        if (!empty($errors)) {
+            return redirect()->back()->withInput()->with('errors', $errors);
         }
 
         $uploadDir = WRITEPATH . 'uploads/kp-pkl/';
-        $replyFile = $this->request->getFile('reply_letter');
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        // Extract metadata BEFORE moving the file
+        $replyName = $replyFile->getClientName();
+        $replyExt  = $replyFile->getClientExtension();
+        $replySize = round($replyFile->getSize() / 1024);
+        $replyMime = $replyFile->getClientMimeType() ?: 'application/pdf';
+
         $replyStored = $replyFile->getRandomName();
         $replyFile->move($uploadDir, $replyStored);
 
@@ -1034,12 +1160,12 @@ class MahasiswaController extends BaseController
             'uploaded_by'     => session()->get('user_id'),
             'document_name'   => 'Surat Balasan / Penerimaan Instansi',
             'document_code'   => 'surat_balasan',
-            'original_name'   => $replyFile->getClientName(),
+            'original_name'   => $replyName,
             'stored_name'     => $replyStored,
             'file_path'       => 'uploads/kp-pkl/' . $replyStored,
-            'file_ext'        => $replyFile->getClientExtension(),
-            'file_size_kb'    => round($replyFile->getSize() / 1024),
-            'mime_type'       => $replyFile->getMimeType(),
+            'file_ext'        => $replyExt,
+            'file_size_kb'    => $replySize,
+            'mime_type'       => $replyMime,
             'version'         => 1,
             'status'          => 'menunggu_verifikasi',
             'created_at'      => date('Y-m-d H:i:s')
@@ -1369,20 +1495,49 @@ class MahasiswaController extends BaseController
 
         $rules = [
             'title'       => 'required',
-            'report_file' => 'uploaded[report_file]|max_size[report_file,15360]|ext_in[report_file,pdf]',
         ];
 
         $messages = [
             'title'       => ['required' => 'Judul laporan akhir wajib diisi.'],
-            'report_file' => ['uploaded' => 'File laporan akhir wajib diunggah.', 'max_size' => 'Ukuran file laporan maksimal 15 MB.', 'ext_in' => 'Format file laporan harus PDF.'],
         ];
 
-        if (!$this->validate($rules, $messages)) {
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        $validationFailed = !$this->validate($rules, $messages);
+        $errors = $validationFailed ? $this->validator->getErrors() : [];
+
+        $reportFile = $this->request->getFile('report_file');
+        $fileErrors = [];
+
+        if (!$reportFile || !$reportFile->isValid()) {
+            $fileErrors['report_file'] = 'File laporan akhir wajib diunggah.';
+        } else {
+            $reportExt  = strtolower($reportFile->getClientExtension());
+            $reportSize = $reportFile->getSize();
+            if ($reportExt !== 'pdf') {
+                $fileErrors['report_file'] = 'Format file laporan harus PDF.';
+            } elseif ($reportSize > 15 * 1024 * 1024) {
+                $fileErrors['report_file'] = 'Ukuran file laporan maksimal 15 MB.';
+            }
+        }
+
+        if (!empty($fileErrors)) {
+            $errors = array_merge($errors, $fileErrors);
+        }
+
+        if (!empty($errors)) {
+            return redirect()->back()->withInput()->with('errors', $errors);
         }
 
         $uploadDir = WRITEPATH . 'uploads/kp-pkl/';
-        $reportFile = $this->request->getFile('report_file');
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        // Extract metadata BEFORE moving the file
+        $reportName = $reportFile->getClientName();
+        $reportExt  = $reportFile->getClientExtension();
+        $reportSize = round($reportFile->getSize() / 1024);
+        $reportMime = $reportFile->getClientMimeType() ?: 'application/pdf';
+
         $reportStored = $reportFile->getRandomName();
         $reportFile->move($uploadDir, $reportStored);
 
@@ -1398,10 +1553,10 @@ class MahasiswaController extends BaseController
             'uploaded_by'     => session()->get('user_id'),
             'title'           => $this->request->getPost('title'),
             'file_path'       => 'uploads/kp-pkl/' . $reportStored,
-            'original_name'   => $reportFile->getClientName(),
+            'original_name'   => $reportName,
             'stored_name'     => $reportStored,
-            'file_ext'        => $reportFile->getClientExtension(),
-            'file_size_kb'    => round($reportFile->getSize() / 1024),
+            'file_ext'        => $reportExt,
+            'file_size_kb'    => $reportSize,
             'version'         => $ver,
             'status'          => 'dikirim',
             'created_at'      => date('Y-m-d H:i:s'),
@@ -1416,12 +1571,12 @@ class MahasiswaController extends BaseController
             'uploaded_by'     => session()->get('user_id'),
             'document_name'   => 'Laporan Akhir KP/KPL',
             'document_code'   => 'laporan_akhir',
-            'original_name'   => $reportFile->getClientName(),
+            'original_name'   => $reportName,
             'stored_name'     => $reportStored,
             'file_path'       => 'uploads/kp-pkl/' . $reportStored,
-            'file_ext'        => $reportFile->getClientExtension(),
-            'file_size_kb'    => round($reportFile->getSize() / 1024),
-            'mime_type'       => $reportFile->getMimeType(),
+            'file_ext'        => $reportExt,
+            'file_size_kb'    => $reportSize,
+            'mime_type'       => $reportMime,
             'version'         => $ver,
             'status'          => 'menunggu_verifikasi',
             'created_at'      => date('Y-m-d H:i:s')
