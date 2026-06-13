@@ -256,8 +256,7 @@ class MahasiswaController extends BaseController
         $userId = session()->get('user_id');
         $profile = $db->table('student_profiles')->where('user_id', $userId)->get()->getRow();
         
-        $validation = \Config\Services::validation();
-        $validation->setRules([
+        $rules = [
             'birth_place'      => 'required',
             'birth_date'       => 'required|valid_date',
             'gender'           => 'required|in_list[L,P]',
@@ -271,7 +270,9 @@ class MahasiswaController extends BaseController
             'parent_phone'     => 'required|numeric|min_length[10]|max_length[15]',
             'study_program_id' => 'required|integer',
             'current_semester' => 'required|integer|greater_than_equal_to[1]',
-        ], [
+        ];
+
+        $messages = [
             'birth_place'      => ['required' => 'Tempat lahir wajib diisi.'],
             'birth_date'       => ['required' => 'Tanggal lahir wajib diisi.', 'valid_date' => 'Tanggal lahir tidak valid.'],
             'gender'           => ['required' => 'Jenis kelamin wajib diisi.', 'in_list' => 'Jenis kelamin tidak valid.'],
@@ -285,9 +286,9 @@ class MahasiswaController extends BaseController
             'parent_phone'     => ['required' => 'Nomor HP orang tua/wali wajib diisi.', 'numeric' => 'Nomor HP orang tua/wali hanya boleh berisi angka.', 'min_length' => 'Nomor HP orang tua/wali minimal 10 digit.', 'max_length' => 'Nomor HP orang tua/wali maksimal 15 digit.'],
             'study_program_id' => ['required' => 'Program studi wajib dipilih.'],
             'current_semester' => ['required' => 'Semester saat ini wajib diisi.', 'greater_than_equal_to' => 'Semester minimal bernilai 1.'],
-        ]);
+        ];
         
-        if (!$this->validate($validation->getRules())) {
+        if (!$this->validate($rules, $messages)) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
         
@@ -398,8 +399,7 @@ class MahasiswaController extends BaseController
         }
 
         // Validation Rules
-        $validation = \Config\Services::validation();
-        $validation->setRules([
+        $rules = [
             'academic_sks'                => 'required|integer|greater_than_equal_to[80]',
             'academic_gpa'                => 'required|decimal|greater_than_equal_to[2.50]',
             'passed_basic_programming'    => 'required|in_list[0,1]',
@@ -412,7 +412,9 @@ class MahasiswaController extends BaseController
             'payment_proof'               => 'uploaded[payment_proof]|max_size[payment_proof,10240]|ext_in[payment_proof,pdf,jpg,jpeg,png]',
             'khs_file'                    => 'uploaded[khs_file]|max_size[khs_file,10240]|ext_in[khs_file,pdf]',
             'recommendation_file'         => 'uploaded[recommendation_file]|max_size[recommendation_file,10240]|ext_in[recommendation_file,pdf]',
-        ], [
+        ];
+
+        $messages = [
             'academic_sks'                => ['required' => 'Jumlah SKS wajib diisi.', 'greater_than_equal_to' => 'Jumlah SKS minimal 80 untuk mendaftar KP/KPL.'],
             'academic_gpa'                => ['required' => 'IPK wajib diisi.', 'greater_than_equal_to' => 'IPK minimal 2,50 untuk mendaftar KP/KPL.'],
             'passed_basic_programming'    => ['required' => 'Kelulusan Pemrograman Dasar wajib dipilih.'],
@@ -425,9 +427,9 @@ class MahasiswaController extends BaseController
             'payment_proof'               => ['uploaded' => 'Bukti pembayaran wajib diunggah.', 'max_size' => 'Ukuran file bukti pembayaran maksimal 10 MB.', 'ext_in' => 'Format bukti pembayaran harus PDF, JPG, JPEG, atau PNG.'],
             'khs_file'                    => ['uploaded' => 'File KHS terbaru wajib diunggah.', 'max_size' => 'Ukuran KHS terbaru maksimal 10 MB.', 'ext_in' => 'Format file KHS harus PDF.'],
             'recommendation_file'         => ['uploaded' => 'Surat rekomendasi Dosen PA wajib diunggah.', 'max_size' => 'Ukuran rekomendasi Dosen PA maksimal 10 MB.', 'ext_in' => 'Format file surat rekomendasi harus PDF.'],
-        ]);
+        ];
 
-        if (!$this->validate($validation->getRules())) {
+        if (!$this->validate($rules, $messages)) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
@@ -785,8 +787,7 @@ class MahasiswaController extends BaseController
         $db = \Config\Database::connect();
         list($profile, $registration) = $this->getStudentData();
 
-        $validation = \Config\Services::validation();
-        $validation->setRules([
+        $rules = [
             'proposed_institution_name' => 'required',
             'proposed_address'          => 'required',
             'proposed_field'            => 'required',
@@ -796,7 +797,9 @@ class MahasiswaController extends BaseController
             'contact_email'             => 'required|valid_email',
             'reason'                    => 'required',
             'mandiri_proof'             => 'uploaded[mandiri_proof]|max_size[mandiri_proof,10240]|ext_in[mandiri_proof,pdf]',
-        ], [
+        ];
+
+        $messages = [
             'proposed_institution_name' => ['required' => 'Nama instansi mandiri wajib diisi.'],
             'proposed_address'          => ['required' => 'Alamat instansi wajib diisi.'],
             'proposed_field'            => ['required' => 'Bidang instansi wajib diisi.'],
@@ -806,9 +809,9 @@ class MahasiswaController extends BaseController
             'contact_email'             => ['required' => 'Email kontak wajib diisi.', 'valid_email' => 'Format email kontak tidak valid.'],
             'reason'                    => ['required' => 'Alasan pengajuan wajib diisi.'],
             'mandiri_proof'             => ['uploaded' => 'File bukti penjajakan/komunikasi wajib diunggah.', 'max_size' => 'File bukti maksimal 10 MB.', 'ext_in' => 'Format file bukti harus PDF.'],
-        ]);
+        ];
 
-        if (!$this->validate($validation->getRules())) {
+        if (!$this->validate($rules, $messages)) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
@@ -999,14 +1002,15 @@ class MahasiswaController extends BaseController
         $db = \Config\Database::connect();
         list($profile, $registration) = $this->getStudentData();
 
-        $validation = \Config\Services::validation();
-        $validation->setRules([
+        $rules = [
             'reply_letter' => 'uploaded[reply_letter]|max_size[reply_letter,10240]|ext_in[reply_letter,pdf]',
-        ], [
-            'reply_letter' => ['uploaded' => 'Surat balasan wajib diunggah.', 'max_size' => 'Ukuran file surat balasan maksimal 10 MB.', 'ext_in' => 'Format file surat balasan harus PDF.'],
-        ]);
+        ];
 
-        if (!$this->validate($validation->getRules())) {
+        $messages = [
+            'reply_letter' => ['uploaded' => 'Surat balasan wajib diunggah.', 'max_size' => 'Ukuran file surat balasan maksimal 10 MB.', 'ext_in' => 'Format file surat balasan harus PDF.'],
+        ];
+
+        if (!$this->validate($rules, $messages)) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
@@ -1158,18 +1162,19 @@ class MahasiswaController extends BaseController
         $db = \Config\Database::connect();
         list($profile, $registration) = $this->getStudentData();
 
-        $validation = \Config\Services::validation();
-        $validation->setRules([
+        $rules = [
             'week_number' => 'required|integer',
             'start_date'  => 'required|valid_date',
             'end_date'    => 'required|valid_date',
-        ], [
+        ];
+
+        $messages = [
             'week_number' => ['required' => 'Nomor minggu wajib diisi.', 'integer' => 'Nomor minggu harus angka.'],
             'start_date'  => ['required' => 'Tanggal awal wajib diisi.'],
             'end_date'    => ['required' => 'Tanggal akhir wajib diisi.'],
-        ]);
+        ];
 
-        if (!$this->validate($validation->getRules())) {
+        if (!$this->validate($rules, $messages)) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
@@ -1212,23 +1217,24 @@ class MahasiswaController extends BaseController
 
         $db = \Config\Database::connect();
         
-        $validation = \Config\Services::validation();
-        $validation->setRules([
+        $rules = [
             'logbook_week_id'      => 'required|integer',
             'activity_date'        => 'required|valid_date',
             'start_time'           => 'required',
             'end_time'             => 'required',
             'activity_description' => 'required',
             'result_description'   => 'required',
-        ], [
+        ];
+
+        $messages = [
             'activity_date'        => ['required' => 'Tanggal kegiatan wajib diisi.'],
             'start_time'           => ['required' => 'Jam mulai wajib diisi.'],
             'end_time'             => ['required' => 'Jam selesai wajib diisi.'],
             'activity_description' => ['required' => 'Uraian kegiatan wajib diisi.'],
             'result_description'   => ['required' => 'Uraian hasil kegiatan wajib diisi.'],
-        ]);
+        ];
 
-        if (!$this->validate($validation->getRules())) {
+        if (!$this->validate($rules, $messages)) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
@@ -1361,16 +1367,17 @@ class MahasiswaController extends BaseController
         $db = \Config\Database::connect();
         list($profile, $registration) = $this->getStudentData();
 
-        $validation = \Config\Services::validation();
-        $validation->setRules([
+        $rules = [
             'title'       => 'required',
             'report_file' => 'uploaded[report_file]|max_size[report_file,15360]|ext_in[report_file,pdf]',
-        ], [
+        ];
+
+        $messages = [
             'title'       => ['required' => 'Judul laporan akhir wajib diisi.'],
             'report_file' => ['uploaded' => 'File laporan akhir wajib diunggah.', 'max_size' => 'Ukuran file laporan maksimal 15 MB.', 'ext_in' => 'Format file laporan harus PDF.'],
-        ]);
+        ];
 
-        if (!$this->validate($validation->getRules())) {
+        if (!$this->validate($rules, $messages)) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
