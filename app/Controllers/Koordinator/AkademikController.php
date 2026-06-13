@@ -55,7 +55,7 @@ class AkademikController extends BaseController
             ->join('study_programs', 'study_programs.id = student_profiles.study_program_id', 'left')
             ->join('kp_periods', 'kp_periods.id = kp_registrations.period_id')
             ->where('kp_registrations.deleted_at', null)
-            ->orderBy('kp_registrations.current_status = "menunggu_verifikasi" DESC')
+            ->orderBy('kp_registrations.current_status = \'menunggu_verifikasi\'', 'DESC', false)
             ->orderBy('kp_registrations.updated_at', 'DESC')
             ->get()
             ->getResultArray();
@@ -179,7 +179,7 @@ class AkademikController extends BaseController
             ->join('institution_profiles', 'institution_profiles.id = placement_requests.institution_id', 'left')
             ->where('placement_requests.placement_type', 'mitra')
             ->where('placement_requests.deleted_at', null)
-            ->orderBy('placement_requests.status = "diajukan" DESC')
+            ->orderBy('placement_requests.status = \'diajukan\'', 'DESC', false)
             ->orderBy('placement_requests.updated_at', 'DESC')
             ->get()
             ->getResultArray();
@@ -499,7 +499,7 @@ class AkademikController extends BaseController
             ->join('kp_periods', 'kp_periods.id = kp_registrations.period_id')
             ->where('placement_requests.placement_type', 'mandiri')
             ->where('placement_requests.deleted_at', null)
-            ->orderBy('placement_requests.status = "diajukan" DESC')
+            ->orderBy('placement_requests.status = \'diajukan\'', 'DESC', false)
             ->orderBy('placement_requests.updated_at', 'DESC')
             ->get()
             ->getResultArray();
@@ -1072,7 +1072,7 @@ class AkademikController extends BaseController
                 ->where('kp_registrations.period_id', $selectedPeriodId)
                 ->whereIn('kp_registrations.current_status', ['sedang_berjalan', 'laporan_akhir_dikirim', 'menunggu_penilaian', 'menunggu_validasi_akhir', 'selesai'])
                 ->where('kp_registrations.deleted_at', null)
-                ->orderBy('final_scores.status = "menunggu_validasi" DESC')
+                ->orderBy('final_scores.status = \'menunggu_validasi\'', 'DESC', false)
                 ->get()
                 ->getResultArray();
         }
