@@ -175,10 +175,14 @@ $routes->group('koordinator', ['filter' => ['auth', 'role:koordinator']], functi
     $routes->post('validasi-penilaian/submit/(:num)', '\App\Controllers\Koordinator\AkademikController::submitPenilaian/$1');
     
     $routes->get('rekap-nilai', '\App\Controllers\Koordinator\AkademikController::rekapNilai');
-    $routes->get('periode', '\App\Controllers\Koordinator\KoordinatorController::placeholder/Manajemen Periode');
-    $routes->get('arsip', '\App\Controllers\Koordinator\KoordinatorController::placeholder/Arsip KP_KPL');
-    $routes->get('laporan', '\App\Controllers\Koordinator\KoordinatorController::placeholder/Laporan Rekapitulasi');
-    $routes->get('keputusan', '\App\Controllers\Koordinator\KoordinatorController::placeholder/Catatan Keputusan');
+    $routes->get('periode', '\App\Controllers\Koordinator\PeriodeController::index');
+    $routes->post('periode/update-status/(:num)', '\App\Controllers\Koordinator\PeriodeController::updateStatus/$1');
+    $routes->get('arsip', '\App\Controllers\Koordinator\ArsipController::index');
+    $routes->get('arsip/view/(:num)', '\App\Controllers\Koordinator\ArsipController::view/$1');
+    $routes->get('laporan', '\App\Controllers\Koordinator\LaporanController::index');
+    $routes->get('laporan/excel', '\App\Controllers\Koordinator\LaporanController::exportExcel');
+    $routes->get('laporan/pdf', '\App\Controllers\Koordinator\LaporanController::exportPdf');
+    $routes->get('keputusan', '\App\Controllers\Koordinator\KeputusanController::index');
     $routes->get('profile', '\App\Controllers\Koordinator\KoordinatorController::placeholder/Profil Saya');
 });
 
