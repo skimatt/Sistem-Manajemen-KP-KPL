@@ -143,17 +143,38 @@ $routes->group('admin', ['filter' => ['auth', 'role:admin']], function($routes) 
 // Group for Koordinator
 $routes->group('koordinator', ['filter' => ['auth', 'role:koordinator']], function($routes) {
     $routes->get('dashboard', '\App\Controllers\Koordinator\KoordinatorController::index');
-    // Placeholders for other menus
-    $routes->get('validasi-registrasi', '\App\Controllers\Koordinator\KoordinatorController::placeholder/Validasi Registrasi');
-    $routes->get('pengajuan-penempatan', '\App\Controllers\Koordinator\KoordinatorController::placeholder/Pengajuan Penempatan');
-    $routes->get('topsis', '\App\Controllers\Koordinator\KoordinatorController::placeholder/Rekomendasi TOPSIS');
-    $routes->get('validasi-mandiri', '\App\Controllers\Koordinator\KoordinatorController::placeholder/Validasi Tempat Mandiri');
-    $routes->get('penetapan-pembimbing', '\App\Controllers\Koordinator\KoordinatorController::placeholder/Penetapan Dosen Pembimbing');
-    $routes->get('monitoring-mahasiswa', '\App\Controllers\Koordinator\KoordinatorController::placeholder/Monitoring Mahasiswa');
-    $routes->get('monitoring-logbook', '\App\Controllers\Koordinator\KoordinatorController::placeholder/Monitoring Logbook');
-    $routes->get('monitoring-laporan', '\App\Controllers\Koordinator\KoordinatorController::placeholder/Monitoring Laporan Akhir');
-    $routes->get('validasi-penilaian', '\App\Controllers\Koordinator\KoordinatorController::placeholder/Validasi Penilaian');
-    $routes->get('rekap-nilai', '\App\Controllers\Koordinator\KoordinatorController::placeholder/Rekap Nilai Akhir');
+    // Akademik Routes
+    $routes->get('validasi-registrasi', '\App\Controllers\Koordinator\AkademikController::validasiRegistrasi');
+    $routes->get('validasi-registrasi/review/(:num)', '\App\Controllers\Koordinator\AkademikController::reviewRegistrasi/$1');
+    $routes->post('validasi-registrasi/submit/(:num)', '\App\Controllers\Koordinator\AkademikController::submitRegistrasi/$1');
+    
+    $routes->get('pengajuan-penempatan', '\App\Controllers\Koordinator\AkademikController::pengajuanPenempatan');
+    $routes->get('pengajuan-penempatan/review/(:num)', '\App\Controllers\Koordinator\AkademikController::reviewPenempatan/$1');
+    $routes->post('pengajuan-penempatan/submit/(:num)', '\App\Controllers\Koordinator\AkademikController::submitPenempatan/$1');
+    
+    $routes->get('topsis', '\App\Controllers\Koordinator\AkademikController::topsis');
+    $routes->post('topsis/calculate/(:num)', '\App\Controllers\Koordinator\AkademikController::calculateTopsis/$1');
+    $routes->post('topsis/save-scores/(:num)', '\App\Controllers\Koordinator\AkademikController::saveTopsisScores/$1');
+    
+    $routes->get('validasi-mandiri', '\App\Controllers\Koordinator\AkademikController::validasiMandiri');
+    $routes->get('validasi-mandiri/review/(:num)', '\App\Controllers\Koordinator\AkademikController::reviewMandiri/$1');
+    $routes->post('validasi-mandiri/submit/(:num)', '\App\Controllers\Koordinator\AkademikController::submitMandiri/$1');
+    
+    $routes->get('penetapan-pembimbing', '\App\Controllers\Koordinator\AkademikController::penetapanPembimbing');
+    $routes->post('penetapan-pembimbing/assign', '\App\Controllers\Koordinator\AkademikController::submitPembimbing');
+    
+    $routes->get('monitoring-mahasiswa', '\App\Controllers\Koordinator\AkademikController::monitoringMahasiswa');
+    
+    $routes->get('monitoring-logbook', '\App\Controllers\Koordinator\AkademikController::monitoringLogbook');
+    $routes->get('monitoring-logbook/view/(:num)', '\App\Controllers\Koordinator\AkademikController::viewLogbook/$1');
+    
+    $routes->get('monitoring-laporan', '\App\Controllers\Koordinator\AkademikController::monitoringLaporan');
+    
+    $routes->get('validasi-penilaian', '\App\Controllers\Koordinator\AkademikController::validasiPenilaian');
+    $routes->get('validasi-penilaian/review/(:num)', '\App\Controllers\Koordinator\AkademikController::reviewPenilaian/$1');
+    $routes->post('validasi-penilaian/submit/(:num)', '\App\Controllers\Koordinator\AkademikController::submitPenilaian/$1');
+    
+    $routes->get('rekap-nilai', '\App\Controllers\Koordinator\AkademikController::rekapNilai');
     $routes->get('periode', '\App\Controllers\Koordinator\KoordinatorController::placeholder/Manajemen Periode');
     $routes->get('arsip', '\App\Controllers\Koordinator\KoordinatorController::placeholder/Arsip KP_KPL');
     $routes->get('laporan', '\App\Controllers\Koordinator\KoordinatorController::placeholder/Laporan Rekapitulasi');

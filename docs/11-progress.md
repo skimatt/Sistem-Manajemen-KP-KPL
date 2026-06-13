@@ -537,6 +537,32 @@ Contoh:
 - Login Google akan dibuat setelah login manual stabil.
 ```
 
+## Update 2026-06-13 (Penyelesaian Modul Akademik Koordinator)
+
+### Selesai
+
+- [x] **Routing & Controller**: Menghubungkan seluruh 10 rute akademik Koordinator di `app/Config/Routes.php` ke `app/Controllers/Koordinator/AkademikController.php`.
+- [x] **TOPSIS Service**: Mengimplementasikan `TopsisService.php` dengan rumus normalisasi matriks, bobot kriteria, ideal positif/negatif, dan closeness coefficient. Dilengkapi penanganan fallback otomatis (matriks default) jika data matriks keputusan belum lengkap.
+- [x] **15 View Templates Akademik Koordinator**:
+  - `validasi-registrasi` (`index.php`, `review.php`)
+  - `pengajuan-penempatan` (`index.php`, `review.php` dengan validasi kuota)
+  - `topsis` (`index.php` kalkulator real-time & override bobot/matriks keputusan)
+  - `validasi-mandiri` (`index.php`, `review.php` dengan pembuatan instansi otomatis jika disetujui)
+  - `penetapan-pembimbing` (`index.php` dengan monitoring kuota bimbingan dosen aktif)
+  - `monitoring-mahasiswa` (`index.php`)
+  - `monitoring-logbook` (`index.php`, `view.php` timeline logbook harian)
+  - `monitoring-laporan` (`index.php`)
+  - `validasi-penilaian` (`index.php`, `review.php` form sahkan nilai dengan SweetAlert2)
+  - `rekap-nilai` (`index.php` ringkasan statistik dan tombol cetak/PDF/Excel)
+- [x] **Validasi & Audit**: Validasi backend lengkap berbahasa Indonesia, transaksi aman (`db->transStart()`), dan pencatatan audit log (`AuditService::log()`) untuk setiap aksi penting.
+- [x] **Verifikasi Sintaks**: Pemeriksaan sintaks PHP menggunakan `php -l` pada semua berkas yang dibuat (lulus 100%).
+
+### Sedang Dikerjakan
+
+- [ ] Implementasi workflow Mahasiswa (Pendaftaran, Pengajuan Penempatan, Logbook, dll).
+
+---
+
 ## Update 2026-06-13 (Status Evaluasi Peran & Fitur Terkini)
 
 ### Selesai (Developed)
@@ -546,15 +572,17 @@ Contoh:
   - **Data Master**: CRUD Mahasiswa, CRUD Dosen, CRUD Instansi Mitra, CRUD Program Studi, CRUD Akun Pengguna.
   - **Pelaksanaan**: CRUD Periode Akademik, Review Registrasi, View Penempatan, Verifikasi Dokumen Syarat Administrasi, Review Logbook Mingguan (accordion Alpine.js), View Laporan Akhir, Monitoring & Rekap Penilaian Akhir.
   - **Konfigurasi & Pengaturan**: CRUD Dokumen Syarat, CRUD Template Surat Resmi, Form Builder Dinamis (tambah/hapus field kustom), Kriteria & Bobot TOPSIS (real-time validator total bobot 100%), Visualisasi Audit Log (detail JSON Diff modal), Pengaturan Sistem (kelayakan IPK/SKS, SMTP disimpan di `writable/settings.json`), Arsip Periode (mengunci periode pasca-kegiatan), Laporan & Export (PhpSpreadsheet Excel & Dompdf landscape PDF).
+- [x] **Peran Koordinator (100% Fitur Selesai)**:
+  - **Validasi Registrasi**: Review dokumen kelayakan pendaftaran mahasiswa (SKS, IPK, MK Wajib).
+  - **Validasi Penempatan**: Menyetujui/menolak pengajuan penempatan mitra kampus (berbasis kuota) atau mandiri (otomatis membuat profil instansi dan kuota baru).
+  - **Rekomendasi TOPSIS**: Perhitungan matriks keputusan, ideal positif/negatif, kriteria cost/benefit, dan perankingan kecocokan instansi.
+  - **Penetapan Pembimbing**: Pembagian dosen bimbingan dengan penghitungan real-time sisa kuota bimbingan aktif dosen.
+  - **Monitoring Progres**: Memantau perkembangan mahasiswa, logbook mingguan (timeline terperinci), dan laporan akhir.
+  - **Validasi Penilaian**: Mengesahkan nilai akhir gabungan (Dosen, Instansi, Admin) dan mengunci status kegiatan mahasiswa menjadi selesai.
+  - **Rekap Nilai**: Halaman ringkasan rekapitulasi nilai akhir per periode yang dapat diekspor langsung ke Excel, PDF, atau dicetak.
 
 ### Belum Dikerjakan / Belum Selesai (Pending/Next Roles)
 
-- [ ] **Peran Koordinator (Sedang Dikerjakan/Menunggu)**:
-  - Validasi registrasi mahasiswa (persetujuan/revisi/penolakan)
-  - Validasi penempatan mahasiswa (mitra/mandiri)
-  - Peninjauan hasil TOPSIS dan penetapan dosen pembimbing akademik (kuota bimbingan terintegrasi)
-  - Monitoring laporan akhir & logbook seluruh bimbingan mahasiswa
-  - Validasi & penguncian nilai akhir mahasiswa
 - [ ] **Peran Mahasiswa (Sedang Dikerjakan/Menunggu)**:
   - Alur pendaftaran/registrasi digital dan upload dokumen persyaratan
   - Alur penempatan (pemilihan mitra dengan rekomendasi TOPSIS / pengajuan tempat mandiri)
