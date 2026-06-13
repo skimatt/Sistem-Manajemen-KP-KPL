@@ -1441,7 +1441,7 @@ class MahasiswaController extends BaseController
         $reviews = $db->table('logbook_reviews')
             ->select('logbook_reviews.*, logbook_weeks.week_number, lecturer_profiles.full_name as lecturer_name')
             ->join('logbook_weeks', 'logbook_weeks.id = logbook_reviews.logbook_week_id')
-            ->join('lecturer_profiles', 'lecturer_profiles.id = logbook_reviews.reviewed_by')
+            ->join('lecturer_profiles', 'lecturer_profiles.user_id = logbook_reviews.reviewed_by')
             ->where('logbook_weeks.registration_id', $registration->id)
             ->orderBy('logbook_reviews.id', 'DESC')
             ->get()

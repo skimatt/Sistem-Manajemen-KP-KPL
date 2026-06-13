@@ -242,16 +242,28 @@ $routes->group('mahasiswa', ['filter' => ['auth', 'role:mahasiswa']], function($
 // Group for Dosen
 $routes->group('dosen', ['filter' => ['auth', 'role:dosen']], function($routes) {
     $routes->get('dashboard', '\App\Controllers\Dosen\DosenController::index');
-    // Placeholders for other menus
-    $routes->get('mahasiswa', '\App\Controllers\Dosen\DosenController::placeholder/Mahasiswa Bimbingan');
-    $routes->get('logbook', '\App\Controllers\Dosen\DosenController::placeholder/Review Logbook');
-    $routes->get('laporan', '\App\Controllers\Dosen\DosenController::placeholder/Review Laporan');
-    $routes->get('penilaian', '\App\Controllers\Dosen\DosenController::placeholder/Input Nilai Dosen');
-    $routes->get('catatan-bimbingan', '\App\Controllers\Dosen\DosenController::placeholder/Catatan Bimbingan');
-    $routes->get('riwayat-bimbingan', '\App\Controllers\Dosen\DosenController::placeholder/Riwayat Bimbingan');
-    $routes->get('kuota-bimbingan', '\App\Controllers\Dosen\DosenController::placeholder/Kuota Bimbingan');
-    $routes->get('notifikasi', '\App\Controllers\Dosen\DosenController::placeholder/Notifikasi');
-    $routes->get('profile', '\App\Controllers\Dosen\DosenController::placeholder/Profil Saya');
+    $routes->get('mahasiswa', '\App\Controllers\Dosen\DosenController::mahasiswa');
+    $routes->get('mahasiswa/detail/(:num)', '\App\Controllers\Dosen\DosenController::detailMahasiswa/$1');
+    $routes->get('logbook', '\App\Controllers\Dosen\DosenController::logbook');
+    $routes->get('logbook/review/(:num)', '\App\Controllers\Dosen\DosenController::reviewLogbook/$1');
+    $routes->post('logbook/review/submit/(:num)', '\App\Controllers\Dosen\DosenController::submitReviewLogbook/$1');
+    $routes->get('catatan-bimbingan', '\App\Controllers\Dosen\DosenController::catatanBimbingan');
+    $routes->get('catatan-bimbingan/detail/(:num)', '\App\Controllers\Dosen\DosenController::detailCatatanBimbingan/$1');
+    $routes->post('catatan-bimbingan/submit-note/(:num)', '\App\Controllers\Dosen\DosenController::submitBimbinganNote/$1');
+    $routes->get('laporan', '\App\Controllers\Dosen\DosenController::laporan');
+    $routes->get('laporan/review/(:num)', '\App\Controllers\Dosen\DosenController::reviewLaporan/$1');
+    $routes->post('laporan/review/submit/(:num)', '\App\Controllers\Dosen\DosenController::submitReviewLaporan/$1');
+    $routes->get('laporan/download/(:num)', '\App\Controllers\Dosen\DosenController::downloadLaporan/$1');
+    $routes->get('penilaian', '\App\Controllers\Dosen\DosenController::penilaian');
+    $routes->get('penilaian/input/(:num)', '\App\Controllers\Dosen\DosenController::inputPenilaian/$1');
+    $routes->post('penilaian/input/submit/(:num)', '\App\Controllers\Dosen\DosenController::submitPenilaian/$1');
+    $routes->get('kuota-bimbingan', '\App\Controllers\Dosen\DosenController::kuotaBimbingan');
+    $routes->get('riwayat-bimbingan', '\App\Controllers\Dosen\DosenController::riwayatBimbingan');
+    $routes->get('notifikasi', '\App\Controllers\Dosen\DosenController::notifikasi');
+    $routes->get('notifikasi/read/(:num)', '\App\Controllers\Dosen\DosenController::readNotifikasi/$1');
+    $routes->post('notifikasi/read-all', '\App\Controllers\Dosen\DosenController::readAllNotifikasi');
+    $routes->get('profile', '\App\Controllers\Dosen\DosenController::profile');
+    $routes->post('profile/update', '\App\Controllers\Dosen\DosenController::updateProfile');
 });
 
 // Group for Instansi

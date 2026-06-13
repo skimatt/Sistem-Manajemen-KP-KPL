@@ -11,5 +11,6 @@ class DatabaseSeeder extends Seeder
         $this->call('StudyProgramSeeder');
         $this->call('UserSeeder');
         $this->call('TopsisCriteriaSeeder');
+        $this->call('AssessmentSeeder');
     }
 }

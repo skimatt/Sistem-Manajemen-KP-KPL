@@ -1000,7 +1000,7 @@ class AkademikController extends BaseController
 
             $rev = $db->table('logbook_reviews')
                 ->select('logbook_reviews.*, lecturer_profiles.full_name as reviewer_name')
-                ->join('lecturer_profiles', 'lecturer_profiles.id = logbook_reviews.reviewed_by')
+                ->join('lecturer_profiles', 'lecturer_profiles.user_id = logbook_reviews.reviewed_by')
                 ->where('logbook_week_id', $w['id'])
                 ->orderBy('logbook_reviews.id', 'DESC')
                 ->get()
