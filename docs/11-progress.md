@@ -613,23 +613,29 @@ Contoh:
 
 ### Belum Dikerjakan / Belum Selesai (Pending/Next Roles)
 
-- [ ] **Peran Mahasiswa (Sedang Dikerjakan/Menunggu)**:
-  - Alur pendaftaran/registrasi digital dan upload dokumen persyaratan
-  - Alur penempatan (pemilihan mitra dengan rekomendasi TOPSIS / pengajuan tempat mandiri)
-  - Pengunduhan surat pengantar instansi resmi hasil generate
-  - Upload dokumen balasan penerimaan instansi
-  - Pengisian logbook mingguan & kegiatan harian
-  - Upload laporan akhir
-  - Visualisasi nilai akhir dan progress stepper dashboard
-- [ ] **Peran Dosen Pembimbing (Belum Dikerjakan)**:
-  - Monitoring mahasiswa bimbingan aktif
-  - Review & komentar logbook mingguan bimbingan
-  - Pemeriksaan/revisi laporan akhir mahasiswa
-  - Pengisian nilai bimbingan akademik
-- [ ] **Peran Instansi Mitra (Belum Dikerjakan)**:
+- [x] **Peran Mahasiswa (100% Fitur Selesai)**:
+  - **Registrasi**: Alur pendaftaran/registrasi digital, upload berkas persyaratan (bukti bayar, KHS, rekomendasi PA), status registrasi, dan log revisi.
+  - **Penempatan**: Pemilihan jalur Mitra Kampus (TOPSIS) vs Tempat Mandiri (usulan data instansi baru).
+  - **Pelaksanaan**: Dokumen generated (Lampiran A, permohonan instansi), unggah berkas surat balasan/penerimaan instansi.
+  - **Bimbingan & Logbook**: Profil dosen pembimbing, pengisian target mingguan, logbook harian, revisi catatan, upload laporan akhir, dan transkrip nilai angka/grade.
+- [x] **Peran Dosen Pembimbing (100% Fitur Selesai)**:
+  - **Bimbingan**: Monitoring mahasiswa bimbingan, progress stepper, detail info.
+  - **Review Logbook**: Validasi entri harian mingguan, submit catatan revisi/persetujuan, dan kirim notifikasi.
+  - **Catatan Bimbingan**: Rekam jejak konsultasi & review berkas.
+  - **Review Laporan**: Pemeriksaan dan pengesahan laporan akhir PDF, secure download.
+  - **Penilaian Dosen**: Penilaian komponen akademik, rekapitulasi nilai akhir gabungan.
+  - **Lainnya**: Profil dosen, kuota bimbingan, notifikasi bimbingan, dan riwayat bimbingan.
+
+### Belum Dikerjakan / Belum Selesai (Pending/Next Roles)
+
+- [ ] **Peran Instansi Mitra (Sedang Dikerjakan/Menunggu)**:
   - Konfirmasi penerimaan mahasiswa penempatan
   - Pengisian nilai evaluasi/lapangan instansi
   - Monitoring logbook bimbingan instansi
+  - Riwayat mahasiswa
+  - Dokumen terkait
+  - Profil instansi / profil saya
+  - Notifikasi instansi
 
 ### Masalah
 
@@ -849,13 +855,59 @@ Contoh:
 
 ### Sedang Dikerjakan
 
-- [ ] Implementasi peran Dosen Pembimbing (monitoring bimbingan, review logbook, koreksi laporan, penilaian akademik).
+- [ ] Implementasi peran Instansi Mitra (Konfirmasi penerimaan, validasi logbook lapangan, pengisian nilai evaluasi instansi, profil instansi).
 
 ### Masalah & Perbaikan
 
 - [x] **[2026-06-13] Bug Upload MIME/finfo Error**: Menyelesaikan kesalahan `finfo_file() Failed to open stream: No such file or directory` saat mengunggah berkas registrasi, proposal mandiri, surat balasan, atau laporan akhir pada Windows. Diselesaikan dengan memigrasi validasi `ext_in` dan `max_size` ke validasi manual dalam controller (mencegah library validasi memanggil `guessExtension` yang mengakses temp stream via `finfo_file`) dan memanggil `$file->getClientMimeType()` menggantikan `$file->getMimeType()`.
 - [x] **[2026-06-13] Bug Kolom Status Logs (Internal Server Error)**: Memperbaiki kesalahan internal saat menyimpan validasi registrasi di Koordinator karena penulisan kolom `status` yang salah (seharusnya `new_status`) dan melengkapi kolom `old_status` serta `changed_by_role` pada tabel `registration_status_logs` di seluruh controller terkait.
 - [x] **[2026-06-13] Bug Hak Akses Unduh Berkas (Forbidden Link)**: Memperbaiki masalah "Anda tidak memiliki hak akses" saat Koordinator memeriksa berkas pendaftaran mahasiswa. Ini disebabkan karena tautan unduhan dokumen di review registrasi dan review mandiri keliru mengarah ke rute admin (`admin/laporan/download`) yang juga membatasi role lain. Dituntaskan dengan menambahkan endpoint unduh dokumen khusus yang aman (`downloadDokumen` dan `downloadLaporan`) bagi Dosen/Koordinator/Admin dan memetakan rute serta tautan view-nya dengan benar.
+
+---
+
+## Update 2026-06-13 (Penyelesaian Modul Dosen Pembimbing)
+
+### Selesai
+
+- [x] **Database & Skema MVP**: Membuat migrasi `2026_06_13_000013_CreateAssessmentComponentsTables.php` untuk melengkapi tabel kustom `assessment_templates` dan `assessment_components`. Menambahkan data seeder default di `AssessmentSeeder.php` yang didaftarkan ke `DatabaseSeeder.php` agar sistem memiliki komponen penilaian dosen dan instansi yang valid.
+- [x] **Routing & Controller**: Menghubungkan seluruh 17 rute dosen di `app/Config/Routes.php` ke `app/Controllers/Dosen/DosenController.php`.
+- [x] **Dosen Controller**:
+  - Mengimplementasikan helper `getLecturerProfile()` untuk mengaitkan akun login dosen dengan profil dosennya secara aman.
+  - Mengimplementasikan `index()` (Dashboard statistik dengan pencarian bimbingan aktif, notifikasi antrean, dan visualisasi status kuota bimbingan).
+  - Mengimplementasikan `mahasiswa()` (Daftar mahasiswa bimbingan aktif berbasis DataTables) dan `detailMahasiswa()` (Halaman profil detail dan progress stepper alur kegiatan mahasiswa).
+  - Mengimplementasikan `logbook()` (Daftar logbook mingguan mahasiswa) dan `reviewLogbook()` / `submitReviewLogbook()` (Alur validasi logbook harian dalam minggu terpilih dengan input komentar revisi/persetujuan yang mengirim notifikasi real-time ke mahasiswa).
+  - Mengimplementasikan `catatanBimbingan()` / `detailCatatanBimbingan()` & `submitBimbinganNote()` (Modul penginputan catatan instruksi pembimbing akademik bimbingan umum mahasiswa).
+  - Mengimplementasikan `laporan()` / `reviewLaporan()` & `submitReviewLaporan()` (Penilaian status laporan akhir PDF mahasiswa, dengan transisi status registrasi ke `menunggu_penilaian_instansi` atau revisi).
+  - Mengimplementasikan `downloadLaporan()` (Mengunduh file laporan PDF mahasiswa secara aman dari folder `writable` privat menggunakan Response Download CI4).
+  - Mengimplementasikan `penilaian()` / `inputPenilaian()` & `submitPenilaian()` (Penginputan komponen penilaian dosen secara dinamis berdasarkan template periode aktif, menjumlahkan bobot nilai, menghitung final score gabungan secara otomatis beserta konversi grade huruf, serta mengubah status registrasi ke `menunggu_validasi_akhir` jika nilai instansi sudah diinput).
+  - Mengimplementasikan `profile()` & `updateProfile()` (Pengaturan profil dosen, password, no HP, keahlian, dan audit logs data lama vs baru).
+- [x] **15 View Templates Dosen**:
+  - `dosen/index.php` (Dashboard stat cards dan list bimbingan)
+  - `mahasiswa.php` (Tabel bimbingan DataTables)
+  - `detail_mahasiswa.php` (Profil mahasiswa & progress stepper)
+  - `logbook.php` (Daftar antrean review logbook DataTables)
+  - `review_logbook.php` (Ulasan entri harian & feedback form)
+  - `catatan_bimbingan.php` (Daftar bimbingan)
+  - `detail_catatan_bimbingan.php` (Timeline & catatan bimbingan)
+  - `laporan.php` (Daftar review laporan)
+  - `review_laporan.php` (Viewer PDF laporan & feedback form)
+  - `penilaian.php` (Tabel status penilaian)
+  - `input_penilaian.php` (Form input nilai dinamis dosen)
+  - `kuota_bimbingan.php` (Kapasitas bimbingan)
+  - `riwayat_bimbingan.php` (History arsip bimbingan)
+  - `notifikasi.php` (Pemberitahuan sistem)
+  - `profile.php` (Ubah profil & password)
+- [x] **Perbaikan Join Bug (Database Query Exception)**: Memperbaiki kesalahan join query di `MahasiswaController::catatanDosen` dan `AkademikController::monitoringLogbook` di mana `reviewed_by` (yang menyimpan `users.id`) salah di-join dengan `lecturer_profiles.id` alih-alih `lecturer_profiles.user_id`.
+- [x] **Verifikasi Sintaks**: Syntax lint check (`php -l`) pada semua berkas lolos 100%.
+
+### Sedang Dikerjakan
+
+- [ ] Implementasi peran Instansi Mitra (Konfirmasi penerimaan, validasi logbook lapangan, pengisian nilai evaluasi instansi, profil instansi).
+
+### Masalah & Perbaikan
+
+- [x] **[2026-06-13] Missing Assessment Tables**: Menyelesaikan database query exception karena ketiadaan tabel komponen penilaian dengan membuat migrasi `assessment_templates` dan `assessment_components`.
+- [x] **[2026-06-13] Join Mismatch Bug**: Memperbaiki join matching column `reviewed_by` dari user ID ke profile ID pada module logbook Koordinator dan Mahasiswa.
 
 ---
 
