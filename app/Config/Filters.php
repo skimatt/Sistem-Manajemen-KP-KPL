@@ -36,6 +36,7 @@ class Filters extends BaseFilters
         'performance'   => PerformanceMetrics::class,
         'auth'          => \App\Filters\AuthFilter::class,
         'role'          => \App\Filters\RoleFilter::class,
+        'workflow'      => \App\Filters\WorkflowAccessFilter::class,
     ];
 
     /**
@@ -97,7 +98,9 @@ class Filters extends BaseFilters
      *
      * @var array<string, list<string>>
      */
-    public array $methods = [];
+    public array $methods = [
+        'POST' => ['csrf'],
+    ];
 
     /**
      * List of filter aliases that should run on any

@@ -65,13 +65,25 @@ class MahasiswaController extends BaseController
             'revisi_registrasi'    => 2,
             'registrasi_ditolak'   => 2,
             'registrasi_disetujui' => 3,
+            'menunggu_penempatan'  => 3,
             'penempatan_diajukan'  => 4,
+            'penempatan_revisi'    => 4,
+            'penempatan_ditolak'   => 4,
             'penempatan_disetujui' => 5,
+            'menunggu_surat'       => 5,
+            'menunggu_penerimaan_instansi' => 5,
+            'penerimaan_perlu_revisi' => 5,
             'diterima_instansi'    => 6,
             'dosen_ditetapkan'     => 7,
             'sedang_berjalan'      => 8,
-            'selesai'              => 9,
-            'diarsipkan'           => 10
+            'laporan_akhir_dikirim' => 8,
+            'menunggu_penilaian_instansi' => 8,
+            'nilai_instansi_masuk' => 8,
+            'menunggu_penilaian_dosen' => 8,
+            'nilai_dosen_masuk'    => 8,
+            'menunggu_validasi_akhir' => 9,
+            'selesai'              => 10,
+            'diarsipkan'           => 11
         ];
         
         $currentRank = $stages[$status] ?? 0;

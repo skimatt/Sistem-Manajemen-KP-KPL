@@ -79,7 +79,13 @@
             <h1 class="text-xl font-bold text-slate-800 dark:text-slate-100">Form Builder (Formulir Dinamis)</h1>
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Buat, susun, dan kelola field form pendaftaran atau penilaian yang disesuaikan per periode.</p>
         </div>
-        <div>
+        <div class="flex flex-wrap items-center gap-2">
+            <form action="<?= base_url('admin/form-builder/generate-kp-kpl-registration') ?>" method="POST" class="inline">
+                <?= csrf_field() ?>
+                <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition">
+                    <i class="ti ti-forms text-sm"></i> Generate Form KP/KPL
+                </button>
+            </form>
             <a href="<?= base_url('admin/form-builder/create') ?>" class="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition">
                 <i class="ti ti-plus text-sm"></i> Tambah Formulir
             </a>

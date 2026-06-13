@@ -17,10 +17,10 @@ Dokumen ini berfungsi sebagai catatan riwayat kerja agar project mudah dilanjutk
 Status saat ini:
 
 ```text
-Pondasi Inti, Database MVP, Autentikasi Multi-role, Layout Premium SaaS, SELURUH Modul Admin, SELURUH Modul Koordinator, dan SELURUH Modul Mahasiswa (Dashboard, Profil Saya, Registrasi KP/KPL, Status Registrasi, Penempatan KP/KPL, Rekomendasi Mitra TOPSIS, Tempat Mandiri, Surat & Dokumen, Upload Balasan, Pembimbing Saya, Logbook Mingguan & Harian, Catatan Dosen, Laporan Akhir, dan Penilaian Saya) selesai diimplementasikan.
+Pondasi Inti, Database MVP, Autentikasi Multi-role, Layout Premium SaaS, SELURUH Modul Admin, SELURUH Modul Koordinator, SELURUH Modul Mahasiswa, Modul Dosen Pembimbing, Modul Instansi Mitra, WorkflowAccessFilter backend, dan CSRF POST sudah diimplementasikan.
 ```
 
-Proyek berada pada tahap di mana Admin Panel, Koordinator Akademik, dan Mahasiswa Step-based Workflows sudah fungsional secara penuh. Langkah selanjutnya adalah mengembangkan peran Dosen dan Instansi.
+Proyek berada pada tahap MVP lanjutan di mana seluruh role utama sudah memiliki alur operasional. Langkah berikutnya adalah hardening menyeluruh: uji alur end-to-end lintas role, audit semua form untuk CSRF, validasi edge case data, dan pengujian black box.
 
 Dokumen utama yang sudah direncanakan:
 
@@ -372,32 +372,15 @@ public/
 
 ## 10.2 Sedang Dikerjakan
 
-- [ ] Implementasi periode KP/KPL.
-- [ ] Implementasi registrasi KP/KPL.
+- [ ] Hardening workflow lintas role dan pengujian end-to-end.
+- [ ] Pengujian black box untuk skenario Admin, Koordinator, Mahasiswa, Dosen, dan Instansi.
 
 ---
 
 ## 10.3 Belum Dikerjakan
 
 - [ ] Implementasi login Google mahasiswa.
-- [ ] Implementasi WorkflowAccessFilter.
-- [ ] Implementasi upload dokumen.
-- [ ] Implementasi verifikasi registrasi.
-- [ ] Implementasi penempatan mitra.
-- [ ] Implementasi tempat mandiri.
-- [ ] Implementasi TOPSIS.
-- [ ] Implementasi generate PDF.
-- [ ] Implementasi upload dokumen balasan.
-- [ ] Implementasi penetapan dosen pembimbing.
-- [ ] Implementasi logbook mingguan.
-- [ ] Implementasi review logbook dosen.
-- [ ] Implementasi laporan akhir.
-- [ ] Implementasi penilaian instansi.
-- [ ] Implementasi penilaian dosen.
-- [ ] Implementasi rekap nilai akhir.
-- [ ] Implementasi arsip periode.
-- [ ] Implementasi audit log.
-- [ ] Implementasi export Excel/PDF.
+- [ ] Pengujian end-to-end dari registrasi sampai arsip periode.
 - [ ] Testing black box.
 - [ ] Penyusunan laporan hasil pengujian.
 
@@ -911,6 +894,200 @@ Contoh:
 
 ---
 
+## Update 2026-06-13 (Penyelesaian Modul Instansi, Workflow Filter, dan Sinkronisasi Progress)
+
+### Selesai
+
+- [x] **Role Instansi Mitra**:
+  - Mengganti seluruh route placeholder Instansi menjadi route aksi nyata pada `app/Config/Routes.php`.
+  - Mengimplementasikan `app/Controllers/Instansi/InstansiController.php` untuk dashboard, profil instansi, konfirmasi penerimaan mahasiswa, daftar mahasiswa, pembimbing lapangan, logbook, validasi logbook opsional, input nilai instansi, dokumen terkait, riwayat, dan notifikasi.
+  - Menambahkan validasi backend Bahasa Indonesia untuk profil, konfirmasi penerimaan, review logbook, dan input nilai instansi.
+  - Menambahkan audit log untuk update profil instansi, konfirmasi penerimaan, review logbook, dan pengiriman nilai instansi.
+  - Menggunakan tabel yang sudah ada tanpa migrasi baru: `placement_requests`, `kp_registrations`, `registration_status_logs`, `logbook_weeks`, `logbook_daily_entries`, `logbook_reviews`, `assessment_scores`, `final_scores`, dan `institution_profiles`.
+- [x] **View Instansi**:
+  - Membuat view `profil.php`, `konfirmasi.php`, `mahasiswa.php`, `pembimbing.php`, `logbook.php`, `review_logbook.php`, `penilaian.php`, `input_penilaian.php`, `dokumen.php`, `riwayat.php`, dan `notifikasi.php`.
+  - Semua view memakai layout global `layouts/app.php`, Tailwind compact dashboard, Tabler Icons, dan `csrf_field()` untuk form POST.
+- [x] **WorkflowAccessFilter**:
+  - Menambahkan `app/Filters/WorkflowAccessFilter.php` untuk membatasi akses route Mahasiswa berdasarkan status workflow.
+  - Mendaftarkan alias filter `workflow` di `app/Config/Filters.php`.
+  - Memasang filter workflow per route Mahasiswa untuk tahap profil, registrasi, penempatan, dokumen, pembimbing, logbook, laporan, penilaian, dan riwayat.
+- [x] **Security**:
+  - Mengaktifkan CSRF untuk semua request POST melalui konfigurasi method filter.
+  - Melakukan audit cepat terhadap form POST pada view Auth, Admin, Koordinator, Mahasiswa, Dosen, dan Instansi; form POST yang terdeteksi sudah memakai `csrf_field()`.
+- [x] **Sinkronisasi Progress**:
+  - Memperbarui ringkasan status proyek dan checklist bagian 10 agar tidak bertentangan dengan update terbaru.
+- [x] **Verifikasi Sintaks**:
+  - `php -l` lolos untuk controller Instansi, route, config filter, WorkflowAccessFilter, dan seluruh view Instansi baru.
+
+### Sedang Dikerjakan
+
+- [ ] Hardening workflow lintas role dan pengujian end-to-end.
+
+### Masalah
+
+- Batch lint seluruh view Instansi sempat gagal karena sandbox Windows, lalu diverifikasi ulang secara individual dan seluruh file lolos.
+
+### Keputusan Baru
+
+- Role Instansi menggunakan tabel workflow yang sudah ada dan tidak menambah migrasi baru agar skema MVP tetap stabil.
+- Validasi logbook oleh Instansi dibuat sebagai validasi pendukung sesuai aturan proyek; validasi utama tetap berada pada Dosen Pembimbing.
+- CSRF diaktifkan pada semua POST sehingga setiap form baru wajib menyertakan `csrf_field()`.
+
+---
+
+## Update 2026-06-13 (End-to-End QA Pass dan Deployment Readiness Audit)
+
+### Selesai
+
+- [x] **Seeder Validasi E2E**:
+  - Menambahkan `app/Database/Seeds/WorkflowDemoSeeder.php` sebagai seeder terpisah untuk data validasi end-to-end.
+  - Seeder membuat data demo konsisten tanpa menghapus data lama: periode aktif, dokumen syarat, bobot TOPSIS, kuota instansi mitra, registrasi mahasiswa, penempatan diterima instansi, pembimbing, dokumen mahasiswa, dokumen generated, logbook, komponen nilai, dan final score.
+  - Seeder dijalankan manual dengan `php spark db:seed WorkflowDemoSeeder`.
+- [x] **Perbaikan Runtime Workflow**:
+  - Memperbaiki guard internal `MahasiswaController::checkAccess()` agar mengenali status workflow lanjutan seperti `menunggu_validasi_akhir`, `nilai_instansi_masuk`, `laporan_akhir_dikirim`, dan status penempatan detail.
+  - Memperbaiki mismatch kolom kuota dosen pada modul Koordinator Penetapan Pembimbing dari `max_students_quota` menjadi `max_supervision_quota`.
+- [x] **Validasi Bahasa Indonesia**:
+  - Menambahkan `app/Language/id/Validation.php`.
+  - Menambahkan `app/Validation/CustomRules.php`.
+  - Mendaftarkan custom rules di `app/Config/Validation.php`.
+- [x] **Smoke Test HTTP Lintas Role**:
+  - Login dan dashboard 5 role berhasil HTTP 200 tanpa exception: Admin, Koordinator, Mahasiswa, Dosen, Instansi.
+  - Smoke test 47 halaman inti lintas role berhasil 100% tanpa `DatabaseException`, `ErrorException`, `Whoops`, atau fatal error.
+  - Authorization negative test: session Mahasiswa mengakses dashboard Admin/Koordinator/Dosen/Instansi menghasilkan redirect 302, bukan akses 200.
+- [x] **Dependency & Migration Check**:
+  - Composer dependency utama tersedia: CodeIgniter 4.7.3, Dompdf 3.1.5, PhpSpreadsheet 5.8.0, PHPUnit 10.5.63.
+  - Seluruh 13 migration sudah applied.
+  - `php spark routes` berhasil dan route utama terbaca.
+- [x] **PHPUnit**:
+  - Test bawaan lulus 5/5 dengan 7 assertions.
+  - Catatan: command `composer test` mengembalikan exit code 1 karena warning coverage driver tidak tersedia, bukan karena test gagal.
+
+### Sedang Dikerjakan
+
+- [ ] Hardening file download agar metadata demo tidak mengarah ke file fisik yang belum ada.
+- [ ] Refactor service layer untuk memindahkan logic besar dari controller ke `WorkflowService`, `DocumentService`, `UploadService`, `NotificationService`, dan `ArchiveService`.
+- [ ] Penyusunan test case black box formal untuk laporan skripsi.
+
+### Masalah & Perbaikan
+
+- [x] **[2026-06-13] Runtime Instansi Dashboard**: Query join `final_scores` dijalankan sebelum join `kp_registrations`, menyebabkan `Unknown column 'kp_registrations.id' in 'on clause'`. Diperbaiki dengan mengubah urutan join di `InstansiController::getPlacedStudents()`.
+- [x] **[2026-06-13] Runtime Koordinator Penetapan Pembimbing**: View/controller memakai key `max_students_quota`, padahal skema memakai `max_supervision_quota`. Diperbaiki di view dan controller.
+- [x] **[2026-06-13] Workflow Mahasiswa Redirect Tahap Lanjut**: Guard internal controller belum mengenali status workflow final. Diperbaiki dengan sinkronisasi rank status.
+- [x] **[2026-06-13] Data Demo Tidak Konsisten**: Periode aktif lama soft-deleted, document requirements dan TOPSIS weights kosong, serta penempatan demo tidak terhubung ke akun instansi. Diperbaiki dengan `WorkflowDemoSeeder`.
+
+### Update Form Builder Admin 2026-06-13
+
+- [x] Menambahkan aksi Admin `Generate Form KP/KPL` pada halaman Form Builder.
+- [x] Menambahkan route POST `admin/form-builder/generate-kp-kpl-registration` dengan proteksi auth, role Admin, dan CSRF.
+- [x] Membuat generator template `Formulir Pendaftaran KP/KPL - Data Diri & Akademik` yang idempotent, sehingga klik ulang tidak menggandakan field lama.
+- [x] Template default mencakup header Data Diri, header Data Akademik, field wajib pendaftaran, upload bukti pembayaran JPG/JPEG maksimal 10 MB, tautan download dokumen, dan catatan dokumen wajib dicetak serta diserahkan ke Koordinator KP/KPL.
+- [x] Form Builder mendukung tipe non-input `heading`, `static_text`, dan `link` untuk kebutuhan instruksi formulir workflow.
+- [x] Template sudah dibuat di database lokal melalui flow Admin dan halaman `admin/form-builder/fields/2` berhasil diakses HTTP 200.
+
+### Deployment Blockers yang Masih Tersisa
+
+- `CI_ENVIRONMENT` masih `development`.
+- `.env` masih memakai database root lokal tanpa password.
+- Google Login belum diimplementasikan dan konfigurasi OAuth masih kosong.
+- Belum ada CI/CD pipeline, health check, backup strategy, monitoring, alerting, dan rollback strategy.
+- PHPUnit butuh coverage driver atau konfigurasi test command disesuaikan agar exit code CI tidak gagal karena warning coverage.
+- Service layer belum lengkap sesuai aturan arsitektur awal; logic workflow/upload/dokumen/notifikasi/arsip masih banyak berada di controller.
+
+### Keputusan Baru
+
+- Data E2E tidak dimasukkan otomatis ke `DatabaseSeeder` agar tidak terbawa ke production seed. Seeder ini dipakai manual untuk validasi lokal/staging.
+- Status proyek dinilai siap untuk **staging smoke test**, tetapi belum siap production deployment.
+
+---
+
+## Update 2026-06-13 (Snapshot Handoff untuk Agent Berikutnya)
+
+### Status Implementasi Saat Ini
+
+```text
+Status proyek: MVP lanjutan / staging smoke-test ready.
+Production ready: belum.
+Role utama: Admin, Koordinator, Mahasiswa, Dosen, dan Instansi sudah memiliki halaman dan workflow operasional.
+Database: 13 migration sudah applied di database lokal `db_kp_pkl`.
+Testing terakhir: smoke test HTTP lintas role berhasil, PHPUnit bawaan lulus tetapi command test masih exit code 1 karena warning coverage driver.
+```
+
+### Perubahan Working Tree yang Belum Di-commit
+
+File modified:
+
+```text
+app/Config/Filters.php
+app/Config/Routes.php
+app/Config/Validation.php
+app/Controllers/Admin/FormBuilderController.php
+app/Controllers/Instansi/InstansiController.php
+app/Controllers/Koordinator/AkademikController.php
+app/Controllers/Mahasiswa/MahasiswaController.php
+app/Views/admin/form-builder/fields.php
+app/Views/admin/form-builder/index.php
+app/Views/koordinator/akademik/penetapan-pembimbing/index.php
+docs/11-progress.md
+```
+
+File/direktori untracked yang perlu ikut diperiksa sebelum commit:
+
+```text
+app/Database/Seeds/WorkflowDemoSeeder.php
+app/Filters/WorkflowAccessFilter.php
+app/Language/id/
+app/Validation/
+app/Views/instansi/
+```
+
+### Yang Sudah Diverifikasi
+
+- [x] `php spark migrate:status` menunjukkan seluruh 13 migration sudah applied.
+- [x] `php spark routes` berhasil membaca route, termasuk `POST admin/form-builder/generate-kp-kpl-registration`.
+- [x] Login dan dashboard 5 role berhasil HTTP 200: Admin, Koordinator, Mahasiswa, Dosen, Instansi.
+- [x] 47 halaman inti lintas role berhasil smoke test tanpa `DatabaseException`, `ErrorException`, `Whoops`, atau fatal error.
+- [x] Negative authorization test: session Mahasiswa ke dashboard role lain menghasilkan redirect 302.
+- [x] Halaman `admin/form-builder/fields/2` berhasil HTTP 200 dan memuat field Formulir KP/KPL.
+- [x] `php -l` terakhir lolos untuk `FormBuilderController.php`, `Routes.php`, dan view Form Builder terkait.
+
+### Data Demo Lokal
+
+Seeder validasi lokal:
+
+```bash
+php spark db:seed WorkflowDemoSeeder
+```
+
+Seeder ini sengaja tidak dimasukkan otomatis ke `DatabaseSeeder` agar data demo tidak ikut terbawa production seed.
+
+Akun demo yang dipakai untuk smoke test:
+
+```text
+admin@unmuslim.ac.id / password
+koordinator@unmuslim.ac.id / password
+mahasiswa@unmuslim.ac.id / password
+dosen@unmuslim.ac.id / password
+instansi@technology.com / password
+```
+
+### Titik Debug yang Perlu Diprioritaskan
+
+- [ ] Hardening download file: beberapa metadata demo mengarah ke file fisik yang belum tentu ada di `writable`.
+- [ ] Audit semua endpoint POST baru untuk memastikan CSRF dan validasi backend Bahasa Indonesia konsisten.
+- [ ] Refactor logic besar di controller ke service layer sesuai aturan `AGENTS.md`: `WorkflowService`, `DocumentService`, `UploadService`, `NotificationService`, dan `ArchiveService`.
+- [ ] Buat test black box formal untuk alur pendaftaran sampai validasi akhir.
+- [ ] Siapkan deployment hardening: `.env` production, credential DB non-root, `CI_ENVIRONMENT=production`, backup, monitoring, rollback, dan CI/CD.
+- [ ] Google Login mahasiswa masih belum diimplementasikan.
+
+### Catatan Penting untuk Agent Berikutnya
+
+- Jangan revert perubahan working tree di atas karena berisi penyelesaian role Instansi, workflow filter, validasi Bahasa Indonesia, seeder E2E, perbaikan runtime, dan Form Builder KP/KPL.
+- Jika menemukan error di Instansi dashboard, pastikan query join `kp_registrations` sudah dieksekusi sebelum join yang mereferensikan kolom registrasi.
+- Jika menemukan error kuota dosen, skema yang benar memakai `lecturer_profiles.max_supervision_quota`, bukan `max_students_quota`.
+- Jika mengetes Form Builder, template KP/KPL lokal berada pada `form_templates.id = 2` di database saat snapshot ini dibuat.
+
+---
+
 ## 16. Hal yang Tidak Boleh Dilakukan
 
 Agent tidak boleh:
@@ -945,6 +1122,9 @@ Writable storage
 Clean URL
 Audit log
 Arsip periode
+Form Builder KP/KPL
+WorkflowAccessFilter
+Smoke test lintas role sudah berjalan
 ```
 
-Langkah berikutnya adalah mulai setup project CodeIgniter 4 dan mengimplementasikan fondasi awal sesuai urutan yang sudah ditentukan.
+Langkah berikutnya adalah hardening menuju staging dan production readiness: rapikan service layer, perkuat download file privat, susun test black box formal, dan siapkan konfigurasi deploy.

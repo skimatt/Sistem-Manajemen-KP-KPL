@@ -811,7 +811,7 @@ class AkademikController extends BaseController
             ->where('kp_registrations.period_id', $registration['period_id'])
             ->countAllResults();
 
-        $maxQuota = intval($lecturer['max_students_quota'] ?: 5);
+        $maxQuota = intval(($lecturer['max_supervision_quota'] ?? 5) ?: 5);
         if ($activeBimbingan >= $maxQuota) {
             $override = $this->request->getPost('override_quota');
             if (!$override) {

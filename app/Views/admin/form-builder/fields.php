@@ -50,8 +50,9 @@
                                             $opts = json_decode($f['options_json'], true); 
                                             if (is_array($opts)) {
                                                 echo '<span class="inline-flex flex-wrap gap-1">';
-                                                foreach ($opts as $opt) {
-                                                    echo '<span class="px-1.5 py-0.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded text-[9px]">' . esc($opt) . '</span>';
+                                                foreach ($opts as $key => $opt) {
+                                                    $optionText = is_string($key) ? $key . ': ' . $opt : $opt;
+                                                    echo '<span class="px-1.5 py-0.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded text-[9px]">' . esc($optionText) . '</span>';
                                                 }
                                                 echo '</span>';
                                             }
@@ -113,6 +114,9 @@
                         <option value="date">Tanggal (Date)</option>
                         <option value="select">Pilihan Dropdown (Select)</option>
                         <option value="file">Berkas File Upload (File)</option>
+                        <option value="heading">Header Bagian</option>
+                        <option value="static_text">Catatan / Instruksi</option>
+                        <option value="link">Tautan Dokumen</option>
                     </select>
                 </div>
 
@@ -120,7 +124,7 @@
                 <div>
                     <label class="block font-semibold text-slate-700 dark:text-slate-300">Pilihan Dropdown (Select Only)</label>
                     <input type="text" name="options_json" placeholder="Contoh: Sangat Baik, Baik, Cukup" class="block w-full mt-1.5 px-3 py-2 bg-white dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-850 dark:text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20" />
-                    <span class="text-[10px] text-slate-400 mt-1 block">Pisahkan dengan koma jika menggunakan tipe input dropdown.</span>
+                    <span class="text-[10px] text-slate-400 mt-1 block">Pisahkan dengan koma untuk dropdown. Untuk tautan, isi: Label, URL.</span>
                 </div>
 
                 <!-- Field: validation_rules -->

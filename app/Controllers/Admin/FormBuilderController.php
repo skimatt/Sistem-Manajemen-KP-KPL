@@ -95,6 +95,65 @@ class FormBuilderController extends BaseController
         return redirect()->to(base_url('admin/form-builder'))->with('success', 'Template formulir berhasil ditambahkan.');
     }
 
+    public function generateKpKplRegistration()
+    {
+        $db = \Config\Database::connect();
+        $now = date('Y-m-d H:i:s');
+
+        $template = $db->table('form_templates')
+            ->where('form_type', 'registration')
+            ->where('name', 'Formulir Pendaftaran KP/KPL - Data Diri & Akademik')
+            ->where('deleted_at', null)
+            ->get()
+            ->getRowArray();
+
+        if (!$template) {
+            $this->formTemplateModel->insert([
+                'name'       => 'Formulir Pendaftaran KP/KPL - Data Diri & Akademik',
+                'form_type'  => 'registration',
+                'version'    => 1,
+                'period_id'  => null,
+                'status'     => 'active',
+                'created_by' => session()->get('user_id'),
+            ]);
+            $templateId = $this->formTemplateModel->getInsertID();
+        } else {
+            $templateId = (int) $template['id'];
+        }
+
+        $created = 0;
+        foreach ($this->kpKplRegistrationFields() as $field) {
+            $exists = $db->table('form_fields')
+                ->where('form_template_id', $templateId)
+                ->where('field_name', $field['field_name'])
+                ->countAllResults();
+
+            if ($exists > 0) {
+                continue;
+            }
+
+            $field['form_template_id'] = $templateId;
+            $field['status'] = 'active';
+            $field['created_at'] = $now;
+            $field['updated_at'] = $now;
+            $db->table('form_fields')->insert($field);
+            $created++;
+        }
+
+        AuditService::log(
+            'GENERATE_KP_KPL_REGISTRATION_FORM',
+            'form_templates',
+            $templateId,
+            null,
+            ['fields_created' => $created],
+            'Generate template formulir pendaftaran KP/KPL Data Diri dan Data Akademik.'
+        );
+
+        return redirect()
+            ->to(base_url('admin/form-builder/fields/' . $templateId))
+            ->with('success', 'Formulir KP/KPL berhasil dibuat/diperbarui. Field baru ditambahkan: ' . $created . '.');
+    }
+
     public function edit($id)
     {
         $template = $this->formTemplateModel->find($id);
@@ -221,7 +280,7 @@ class FormBuilderController extends BaseController
         $rules = [
             'field_name'       => 'required|alpha_dash|max_length[100]',
             'label'            => 'required|max_length[150]',
-            'field_type'       => 'required|in_list[text,select,file,date,number,textarea]',
+            'field_type'       => 'required|in_list[text,select,file,date,number,textarea,heading,static_text,link]',
             'options_json'     => 'permit_empty',
             'validation_rules' => 'permit_empty',
             'is_required'      => 'required|in_list[0,1]',
@@ -284,5 +343,60 @@ class FormBuilderController extends BaseController
         );
 
         return redirect()->to(base_url('admin/form-builder/fields/' . $formTemplateId))->with('success', 'Field berhasil dihapus.');
+    }
+
+    private function kpKplRegistrationFields(): array
+    {
+        $yesNo = json_encode(['Ya', 'Tidak']);
+
+        return [
+            $this->field('section_data_diri', 'Header Pengisian Formulir KP/KPL (Data Diri)', 'heading', 0, 1),
+            $this->field('nama_lengkap', 'Nama Lengkap', 'text', 1, 2, null, 'required|max_length[150]'),
+            $this->field('npm', 'Nomor Pokok Mahasiswa (NPM)', 'text', 1, 3, null, 'required|numeric|max_length[30]'),
+            $this->field('tempat_tanggal_lahir', 'Tempat, Tanggal Lahir', 'text', 1, 4, null, 'required|max_length[150]'),
+            $this->field('jenis_kelamin', 'Jenis Kelamin (L/P)', 'select', 1, 5, json_encode(['L', 'P']), 'required|in_list[L,P]'),
+            $this->field('agama', 'Agama', 'text', 1, 6, null, 'required|max_length[50]'),
+            $this->field('alamat_lengkap_ktp', 'Alamat Lengkap (sesuai KTP)', 'textarea', 1, 7, null, 'required'),
+            $this->field('kecamatan', 'Kecamatan', 'text', 1, 8, null, 'required|max_length[100]'),
+            $this->field('kabupaten', 'Kabupaten', 'text', 1, 9, null, 'required|max_length[100]'),
+            $this->field('provinsi', 'Provinsi', 'text', 1, 10, null, 'required|max_length[100]'),
+            $this->field('nomor_hp', 'Nomor Telepon/HP (aktif)', 'text', 1, 11, null, 'required|max_length[30]'),
+            $this->field('email_aktif', 'Alamat Email (aktif)', 'text', 1, 12, null, 'required|valid_email|max_length[150]'),
+            $this->field('nama_orang_tua_wali', 'Nama Orang Tua/Wali', 'text', 1, 13, null, 'required|max_length[150]'),
+            $this->field('nomor_hp_orang_tua_wali', 'Nomor Telepon Orang Tua/Wali', 'text', 1, 14, null, 'required|max_length[30]'),
+            $this->field('semester_pendaftaran', 'Semester saat pendaftaran', 'number', 1, 15, null, 'required|integer|greater_than[0]'),
+            $this->field('tahun_akademik', 'Tahun Akademik', 'text', 1, 16, null, 'required|max_length[20]'),
+            $this->field('angkatan', 'Angkatan', 'number', 1, 17, null, 'required|integer'),
+            $this->field('program_studi', 'Program Studi (Prodi)', 'text', 1, 18, null, 'required|max_length[150]'),
+
+            $this->field('section_data_akademik', 'Header Pengisian Formulir KP/KPL (Data Akademik)', 'heading', 0, 100),
+            $this->field('jumlah_sks', 'Jumlah SKS yang telah ditempuh', 'number', 1, 101, null, 'required|integer|greater_than_equal_to[0]'),
+            $this->field('ipk_terakhir', 'IPK terakhir (skala 4,00)', 'number', 1, 102, null, 'required|decimal|greater_than_equal_to[0]|less_than_equal_to[4]'),
+            $this->field('ipk_minimal_250', 'Apakah IPK >= 2,50?', 'select', 1, 103, $yesNo, 'required|in_list[Ya,Tidak]'),
+            $this->field('lulus_pemrograman_dasar', 'Apakah telah lulus mata kuliah Pemrograman Dasar?', 'select', 1, 104, $yesNo, 'required|in_list[Ya,Tidak]'),
+            $this->field('lulus_struktur_data', 'Apakah telah lulus mata kuliah Struktur Data?', 'select', 1, 105, $yesNo, 'required|in_list[Ya,Tidak]'),
+            $this->field('lulus_basis_data', 'Apakah telah lulus mata kuliah Basis Data / Database System?', 'select', 1, 106, $yesNo, 'required|in_list[Ya,Tidak]'),
+            $this->field('lulus_apsi', 'Apakah telah lulus mata kuliah Analisis dan Perancangan Sistem Informasi?', 'select', 1, 107, $yesNo, 'required|in_list[Ya,Tidak]'),
+            $this->field('lulus_jaringan_komputer', 'Apakah telah lulus mata kuliah Jaringan Komputer / Data Communication?', 'select', 1, 108, $yesNo, 'required|in_list[Ya,Tidak]'),
+            $this->field('lulus_mk_konsentrasi', 'Apakah telah lulus minimal salah satu mata kuliah konsentrasi keahlian?', 'select', 1, 109, $yesNo, 'required|in_list[Ya,Tidak]'),
+            $this->field('status_biaya_pendidikan', 'Status Biaya Pendidikan', 'select', 1, 110, json_encode(['KIP', 'Mandiri', 'Internal']), 'required|in_list[KIP,Mandiri,Internal]'),
+            $this->field('bukti_pembayaran_kp', 'Bukti Pembayaran KP', 'file', 1, 111, null, 'required|ext_in[bukti_pembayaran_kp,jpg,jpeg]|max_size[bukti_pembayaran_kp,10240]'),
+            $this->field('catatan_bukti_pembayaran', 'Format file: JPG/JPEG, nama file Nama+NPM, maksimal 10 MB.', 'static_text', 0, 112),
+            $this->field('download_dokumen_kp_kpl', 'PENTING: Silakan unduh dokumen melalui tautan di bawah ini.', 'link', 0, 113, json_encode(['label' => 'Link Download', 'url' => '#'])),
+            $this->field('catatan_dokumen_cetak', 'Dokumen wajib dicetak fisik dan diserahkan langsung kepada Koordinator KP/KPL.', 'static_text', 0, 114),
+        ];
+    }
+
+    private function field(string $name, string $label, string $type, int $required, int $order, ?string $options = null, ?string $rules = null): array
+    {
+        return [
+            'field_name' => $name,
+            'label' => $label,
+            'field_type' => $type,
+            'options_json' => $options,
+            'validation_rules' => $rules,
+            'is_required' => $required,
+            'sort_order' => $order,
+        ];
     }
 }

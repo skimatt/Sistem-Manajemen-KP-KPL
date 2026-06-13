@@ -135,7 +135,7 @@
                         <option value="">-- Pilih Dosen Pembimbing --</option>
                         <?php foreach ($lecturers as $lec): ?>
                             <option value="<?= $lec['id'] ?>">
-                                <?= esc($lec['full_name']) ?> (Bimbingan: <?= $lec['active_bimbingan'] ?>/<?= $lec['max_students_quota'] ?>)
+                                <?= esc($lec['full_name']) ?> (Bimbingan: <?= esc($lec['active_bimbingan']) ?>/<?= esc($lec['max_supervision_quota'] ?? 5) ?>)
                             </option>
                         <?php endforeach; ?>
                     </select>
