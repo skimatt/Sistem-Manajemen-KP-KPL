@@ -119,4 +119,33 @@ class VerifikasiController extends BaseController
 
         return redirect()->back()->with('error', 'Gagal memperbarui status dokumen.');
     }
+
+    /**
+     * Securely download student uploaded documents.
+     */
+    public function downloadDokumen($id)
+    {
+        $db = \Config\Database::connect();
+        $doc = $db->table('student_documents')->where('id', $id)->get()->getRow();
+        if (!$doc) {
+            return redirect()->back()->with('error', 'Dokumen tidak ditemukan.');
+        }
+
+        $filePath = $doc->file_path;
+        if (!str_starts_with($filePath, '/') && !str_contains($filePath, ':')) {
+            $filePath = WRITEPATH . $filePath;
+        }
+
+        if (!file_exists($filePath)) {
+            $checkPath = WRITEPATH . 'uploads/kp-pkl/' . $doc->stored_name;
+            if (file_exists($checkPath)) {
+                $filePath = $checkPath;
+            } else {
+                return redirect()->back()->with('error', 'Berkas fisik tidak ditemukan di server.');
+            }
+        }
+
+        return $this->response->download($filePath, null)
+            ->setFileName($doc->original_name);
+    }
 }

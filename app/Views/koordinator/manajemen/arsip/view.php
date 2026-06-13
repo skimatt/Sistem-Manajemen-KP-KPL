@@ -87,7 +87,7 @@
                                     </td>
                                     <td class="px-4 py-4 text-center">
                                         <?php if ($s['report_id']): ?>
-                                            <a href="<?= base_url('admin/laporan/download/' . $s['report_id']) ?>" 
+                                            <a href="<?= base_url('koordinator/monitoring-laporan/download/' . $s['report_id']) ?>" 
                                                class="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white rounded font-bold transition text-[10px]"
                                                target="_blank">
                                                 <i class="ti ti-download text-xs"></i> Unduh PDF

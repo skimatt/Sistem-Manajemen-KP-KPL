@@ -71,8 +71,10 @@ class ArsipController extends BaseController
         foreach ($registrations as $reg) {
             $db->table('registration_status_logs')->insert([
                 'registration_id' => $reg['id'],
-                'status'          => 'diarsipkan',
+                'old_status'      => $reg['current_status'],
+                'new_status'      => 'diarsipkan',
                 'changed_by'      => session()->get('user_id'),
+                'changed_by_role' => 'admin',
                 'note'            => 'Diarsipkan secara otomatis saat penutupan periode oleh Admin.',
                 'created_at'      => date('Y-m-d H:i:s'),
             ]);

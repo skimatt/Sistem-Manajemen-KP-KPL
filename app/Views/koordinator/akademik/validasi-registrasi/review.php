@@ -148,7 +148,7 @@
                                     <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase <?= $badge ?>"><?= esc($doc['status']) ?></span>
                                     
                                     <!-- View/Download -->
-                                    <a href="<?= base_url('admin/laporan/download/' . $doc['id']) ?>" 
+                                    <a href="<?= base_url('koordinator/validasi-registrasi/download-dokumen/' . $doc['id']) ?>" 
                                        class="inline-flex h-7 px-3 items-center justify-center rounded bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white font-semibold transition"
                                        target="_blank">
                                         <i class="ti ti-download text-xs mr-1"></i> Unduh

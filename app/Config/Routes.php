@@ -79,6 +79,7 @@ $routes->group('admin', ['filter' => ['auth', 'role:admin']], function($routes) 
     $routes->get('verifikasi-administrasi', '\App\Controllers\Admin\VerifikasiController::index');
     $routes->get('verifikasi-administrasi/review/(:num)', '\App\Controllers\Admin\VerifikasiController::review/$1');
     $routes->post('verifikasi-administrasi/update-document/(:num)', '\App\Controllers\Admin\VerifikasiController::updateDocument/$1');
+    $routes->get('verifikasi-administrasi/download-dokumen/(:num)', '\App\Controllers\Admin\VerifikasiController::downloadDokumen/$1');
 
     // Pelaksanaan - Logbook Mahasiswa
     $routes->get('logbook', '\App\Controllers\Admin\LogbookController::index');
@@ -147,6 +148,7 @@ $routes->group('koordinator', ['filter' => ['auth', 'role:koordinator']], functi
     $routes->get('validasi-registrasi', '\App\Controllers\Koordinator\AkademikController::validasiRegistrasi');
     $routes->get('validasi-registrasi/review/(:num)', '\App\Controllers\Koordinator\AkademikController::reviewRegistrasi/$1');
     $routes->post('validasi-registrasi/submit/(:num)', '\App\Controllers\Koordinator\AkademikController::submitRegistrasi/$1');
+    $routes->get('validasi-registrasi/download-dokumen/(:num)', '\App\Controllers\Koordinator\AkademikController::downloadDokumen/$1');
     
     $routes->get('pengajuan-penempatan', '\App\Controllers\Koordinator\AkademikController::pengajuanPenempatan');
     $routes->get('pengajuan-penempatan/review/(:num)', '\App\Controllers\Koordinator\AkademikController::reviewPenempatan/$1');
@@ -169,6 +171,7 @@ $routes->group('koordinator', ['filter' => ['auth', 'role:koordinator']], functi
     $routes->get('monitoring-logbook/view/(:num)', '\App\Controllers\Koordinator\AkademikController::viewLogbook/$1');
     
     $routes->get('monitoring-laporan', '\App\Controllers\Koordinator\AkademikController::monitoringLaporan');
+    $routes->get('monitoring-laporan/download/(:num)', '\App\Controllers\Koordinator\AkademikController::downloadLaporan/$1');
     
     $routes->get('validasi-penilaian', '\App\Controllers\Koordinator\AkademikController::validasiPenilaian');
     $routes->get('validasi-penilaian/review/(:num)', '\App\Controllers\Koordinator\AkademikController::reviewPenilaian/$1');
@@ -212,6 +215,7 @@ $routes->group('mahasiswa', ['filter' => ['auth', 'role:mahasiswa']], function($
     $routes->get('dokumen', '\App\Controllers\Mahasiswa\MahasiswaController::dokumen');
     $routes->get('upload-balasan', '\App\Controllers\Mahasiswa\MahasiswaController::uploadBalasan');
     $routes->post('upload-balasan/submit', '\App\Controllers\Mahasiswa\MahasiswaController::submitBalasanFile');
+    $routes->get('download-file/(:num)/(:any)', '\App\Controllers\Mahasiswa\MahasiswaController::downloadFile/$1/$2');
     
     // Pembimbing
     $routes->get('pembimbing', '\App\Controllers\Mahasiswa\MahasiswaController::pembimbing');

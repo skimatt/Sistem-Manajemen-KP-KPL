@@ -84,7 +84,7 @@
                             </span>
 
                             <div class="flex items-center gap-1.5">
-                                <a href="<?= base_url('admin/mahasiswa') ?>/../../uploads/kp-pkl/<?= $doc['stored_name'] ?>" target="_blank" class="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-[10px] font-bold transition flex items-center gap-1">
+                                <a href="<?= base_url('admin/verifikasi-administrasi/download-dokumen/' . $doc['id']) ?>" target="_blank" class="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-[10px] font-bold transition flex items-center gap-1">
                                     <i class="ti ti-download text-xs"></i> Unduh File
                                 </a>
                                 <button @click="showVerifyForm = !showVerifyForm" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-bold transition flex items-center gap-1">

@@ -72,7 +72,7 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 text-center whitespace-nowrap">
-                                        <a href="<?= base_url('admin/laporan/download/' . $rep['id']) ?>" 
+                                        <a href="<?= base_url('koordinator/monitoring-laporan/download/' . $rep['id']) ?>" 
                                            class="inline-flex h-7 px-3.5 items-center justify-center rounded bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white font-semibold transition"
                                            target="_blank">
                                             <i class="ti ti-download text-xs mr-1"></i> Unduh

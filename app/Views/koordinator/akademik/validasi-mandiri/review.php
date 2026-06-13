@@ -100,7 +100,7 @@
                                 <p class="text-[10px] text-slate-450 mt-0.5">Berkas: <?= esc($acceptanceDoc['original_name']) ?> (<?= number_format($acceptanceDoc['file_size_kb'], 0) ?> KB)</p>
                             </div>
                         </div>
-                        <a href="<?= base_url('admin/laporan/download/' . $acceptanceDoc['id']) ?>" 
+                        <a href="<?= base_url('koordinator/validasi-registrasi/download-dokumen/' . $acceptanceDoc['id']) ?>" 
                            class="inline-flex h-7 px-3.5 items-center justify-center rounded bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white font-semibold transition"
                            target="_blank">
                             <i class="ti ti-download text-xs mr-1"></i> Unduh Berkas

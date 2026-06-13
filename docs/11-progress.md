@@ -854,6 +854,8 @@ Contoh:
 ### Masalah & Perbaikan
 
 - [x] **[2026-06-13] Bug Upload MIME/finfo Error**: Menyelesaikan kesalahan `finfo_file() Failed to open stream: No such file or directory` saat mengunggah berkas registrasi, proposal mandiri, surat balasan, atau laporan akhir pada Windows. Diselesaikan dengan memigrasi validasi `ext_in` dan `max_size` ke validasi manual dalam controller (mencegah library validasi memanggil `guessExtension` yang mengakses temp stream via `finfo_file`) dan memanggil `$file->getClientMimeType()` menggantikan `$file->getMimeType()`.
+- [x] **[2026-06-13] Bug Kolom Status Logs (Internal Server Error)**: Memperbaiki kesalahan internal saat menyimpan validasi registrasi di Koordinator karena penulisan kolom `status` yang salah (seharusnya `new_status`) dan melengkapi kolom `old_status` serta `changed_by_role` pada tabel `registration_status_logs` di seluruh controller terkait.
+- [x] **[2026-06-13] Bug Hak Akses Unduh Berkas (Forbidden Link)**: Memperbaiki masalah "Anda tidak memiliki hak akses" saat Koordinator memeriksa berkas pendaftaran mahasiswa. Ini disebabkan karena tautan unduhan dokumen di review registrasi dan review mandiri keliru mengarah ke rute admin (`admin/laporan/download`) yang juga membatasi role lain. Dituntaskan dengan menambahkan endpoint unduh dokumen khusus yang aman (`downloadDokumen` dan `downloadLaporan`) bagi Dosen/Koordinator/Admin dan memetakan rute serta tautan view-nya dengan benar.
 
 ---
 

@@ -139,9 +139,11 @@ class AkademikController extends BaseController
         // Save status log in registration_status_logs
         $db->table('registration_status_logs')->insert([
             'registration_id' => $id,
-            'status'          => $status,
-            'note'            => $finalNote ?: null,
+            'old_status'      => $registration['current_status'],
+            'new_status'      => $status,
             'changed_by'      => session()->get('user_id'),
+            'changed_by_role' => 'koordinator',
+            'note'            => $finalNote ?: null,
             'created_at'      => date('Y-m-d H:i:s'),
         ]);
 
@@ -323,9 +325,11 @@ class AkademikController extends BaseController
         // Status logs
         $db->table('registration_status_logs')->insert([
             'registration_id' => $placement['registration_id'],
-            'status'          => $regStatus,
-            'note'            => 'Penempatan: ' . ($reviewNote ?: strtoupper($status)),
+            'old_status'      => $registration['current_status'],
+            'new_status'      => $regStatus,
             'changed_by'      => session()->get('user_id'),
+            'changed_by_role' => 'koordinator',
+            'note'            => 'Penempatan: ' . ($reviewNote ?: strtoupper($status)),
             'created_at'      => date('Y-m-d H:i:s'),
         ]);
 
@@ -552,6 +556,11 @@ class AkademikController extends BaseController
             return redirect()->to(base_url('koordinator/validasi-mandiri'))->with('error', 'Data tidak ditemukan.');
         }
 
+        $registration = $this->registrationModel->find($placement['registration_id']);
+        if (!$registration) {
+            return redirect()->to(base_url('koordinator/validasi-mandiri'))->with('error', 'Data registrasi tidak ditemukan.');
+        }
+
         $rules = [
             'status'      => 'required|in_list[disetujui,perlu_revisi,ditolak]',
             'review_note' => 'permit_empty|string',
@@ -677,9 +686,11 @@ class AkademikController extends BaseController
         // Status logs
         $db->table('registration_status_logs')->insert([
             'registration_id' => $placement['registration_id'],
-            'status'          => $regStatus,
-            'note'            => 'Tempat Mandiri: ' . ($reviewNote ?: strtoupper($status)),
+            'old_status'      => $registration['current_status'],
+            'new_status'      => $regStatus,
             'changed_by'      => session()->get('user_id'),
+            'changed_by_role' => 'koordinator',
+            'note'            => 'Tempat Mandiri: ' . ($reviewNote ?: strtoupper($status)),
             'created_at'      => date('Y-m-d H:i:s'),
         ]);
 
@@ -848,9 +859,11 @@ class AkademikController extends BaseController
         // Add status log
         $db->table('registration_status_logs')->insert([
             'registration_id' => $regId,
-            'status'          => 'sedang_berjalan',
-            'note'            => 'Dosen pembimbing ditetapkan: ' . $lecturer['full_name'],
+            'old_status'      => $registration['current_status'],
+            'new_status'      => 'sedang_berjalan',
             'changed_by'      => session()->get('user_id'),
+            'changed_by_role' => 'koordinator',
+            'note'            => 'Dosen pembimbing ditetapkan: ' . $lecturer['full_name'],
             'created_at'      => date('Y-m-d H:i:s'),
         ]);
 
@@ -1124,6 +1137,11 @@ class AkademikController extends BaseController
             return redirect()->back()->with('error', 'Skor akhir belum dihitung/ditemukan.');
         }
 
+        $registration = $this->registrationModel->find($id);
+        if (!$registration) {
+            return redirect()->back()->with('error', 'Data registrasi tidak ditemukan.');
+        }
+
         $rules = [
             'validation_note' => 'permit_empty|string',
         ];
@@ -1153,9 +1171,11 @@ class AkademikController extends BaseController
         // Add log
         $db->table('registration_status_logs')->insert([
             'registration_id' => $id,
-            'status'          => 'selesai',
-            'note'            => 'Nilai akhir divalidasi oleh Koordinator.',
+            'old_status'      => $registration['current_status'],
+            'new_status'      => 'selesai',
             'changed_by'      => session()->get('user_id'),
+            'changed_by_role' => 'koordinator',
+            'note'            => 'Nilai akhir divalidasi oleh Koordinator.',
             'created_at'      => date('Y-m-d H:i:s'),
         ]);
 
@@ -1215,5 +1235,63 @@ class AkademikController extends BaseController
         ];
 
         return view('koordinator/akademik/rekap-nilai/index', $data);
+    }
+
+    /**
+     * Securely download student uploaded documents.
+     */
+    public function downloadDokumen($id)
+    {
+        $db = \Config\Database::connect();
+        $doc = $db->table('student_documents')->where('id', $id)->get()->getRow();
+        if (!$doc) {
+            return redirect()->back()->with('error', 'Dokumen tidak ditemukan.');
+        }
+
+        $filePath = $doc->file_path;
+        if (!str_starts_with($filePath, '/') && !str_contains($filePath, ':')) {
+            $filePath = WRITEPATH . $filePath;
+        }
+
+        if (!file_exists($filePath)) {
+            $checkPath = WRITEPATH . 'uploads/kp-pkl/' . $doc->stored_name;
+            if (file_exists($checkPath)) {
+                $filePath = $checkPath;
+            } else {
+                return redirect()->back()->with('error', 'Berkas fisik tidak ditemukan di server.');
+            }
+        }
+
+        return $this->response->download($filePath, null)
+            ->setFileName($doc->original_name);
+    }
+
+    /**
+     * Securely download student final reports.
+     */
+    public function downloadLaporan($id)
+    {
+        $db = \Config\Database::connect();
+        $report = $db->table('final_reports')->where('id', $id)->get()->getRow();
+        if (!$report) {
+            return redirect()->back()->with('error', 'Laporan akhir tidak ditemukan.');
+        }
+
+        $filePath = $report->file_path;
+        if (!str_starts_with($filePath, '/') && !str_contains($filePath, ':')) {
+            $filePath = WRITEPATH . $filePath;
+        }
+
+        if (!file_exists($filePath)) {
+            $checkPath = WRITEPATH . 'uploads/' . $report->stored_name;
+            if (file_exists($checkPath)) {
+                $filePath = $checkPath;
+            } else {
+                return redirect()->back()->with('error', 'Berkas fisik laporan tidak ditemukan di server.');
+            }
+        }
+
+        return $this->response->download($filePath, null)
+            ->setFileName($report->original_name);
     }
 }
