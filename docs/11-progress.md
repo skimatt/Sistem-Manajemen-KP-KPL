@@ -537,6 +537,31 @@ Contoh:
 - Login Google akan dibuat setelah login manual stabil.
 ```
 
+## Update 2026-06-13 (Penyelesaian Modul Manajemen & Arsip Koordinator)
+
+### Selesai
+
+- [x] **Routing & Controllers**: Menghubungkan 8 rute Manajemen & Arsip Koordinator di `app/Config/Routes.php` ke 4 controller baru di bawah `App\Controllers\Koordinator\`: `PeriodeController`, `ArsipController`, `LaporanController`, dan `KeputusanController`.
+- [x] **Manajemen Periode**:
+  - Tampilan grid daftar periode lengkap dengan statistika pendaftaran dan keaktifan mahasiswa.
+  - Alur siklus status periode: draft $\rightarrow$ aktif $\rightarrow$ ditutup $\rightarrow$ diarsipkan.
+  - Validasi ketat saat mengarsipkan periode: mendeteksi dan memblokir pengarsipan jika terdapat mahasiswa yang belum menyelesaikan workflow akademik.
+  - Transaksi database aman (`transStart`/`transComplete`) untuk mengarsipkan data periode dan registrasi mahasiswa secara bersamaan.
+- [x] **Arsip KP/KPL**:
+  - Halaman arsip terkunci read-only yang memuat profil mahasiswa, instansi, dosen pembimbing, skor akhir, grade huruf, dan berkas laporan akhir.
+- [x] **Laporan Rekapitulasi**:
+  - Dasbor statistik distribusi grade nilai (A-E) dan grafik/progress bar persentase.
+  - Implementasi download file Excel (`phpspreadsheet`) dan PDF (`dompdf`) landscape A4 yang rapi dan aman.
+- [x] **Catatan Keputusan**:
+  - Log audit khusus personal Koordinator yang aktif (`user_id = session('user_id')`) dilengkapi inspect modal Alpine.js untuk membandingkan payload JSON data lama dan baru secara real-time.
+- [x] **Verifikasi Sintaks**: Syntax lint check (`php -l`) pada semua berkas lolos 100%.
+
+### Sedang Dikerjakan
+
+- [ ] Implementasi workflow Mahasiswa (Pendaftaran, Pengajuan Penempatan, Logbook, dll).
+
+---
+
 ## Update 2026-06-13 (Penyelesaian Modul Akademik Koordinator)
 
 ### Selesai
@@ -580,6 +605,10 @@ Contoh:
   - **Monitoring Progres**: Memantau perkembangan mahasiswa, logbook mingguan (timeline terperinci), dan laporan akhir.
   - **Validasi Penilaian**: Mengesahkan nilai akhir gabungan (Dosen, Instansi, Admin) dan mengunci status kegiatan mahasiswa menjadi selesai.
   - **Rekap Nilai**: Halaman ringkasan rekapitulasi nilai akhir per periode yang dapat diekspor langsung ke Excel, PDF, atau dicetak.
+  - **Manajemen Periode**: Toggling status periode (draft -> aktif -> ditutup -> diarsipkan) dengan pengaman validasi workflow mahasiswa.
+  - **Arsip KP/KPL**: Dashboard riwayat periode akademik yang terkunci secara permanen (Read-Only).
+  - **Laporan Rekapitulasi**: Dasbor statistik distribusi grade nilai serta ekspor berkas Excel dan PDF resmi.
+  - **Catatan Keputusan**: Halaman personal audit logs khusus Koordinator dengan fitur JSON Diff viewer.
 
 ### Belum Dikerjakan / Belum Selesai (Pending/Next Roles)
 
